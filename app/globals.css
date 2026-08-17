@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  /* page */
+  --bg: oklch(0.97 0.002 95);
+  --ink: oklch(0.16 0 0);
+  --ink-muted: oklch(0.42 0.005 95);
+  --ink-faint: oklch(0.62 0.005 95);
+  --hairline: oklch(0.86 0.004 95);
+
+  /* dark flat panel (stat block, ticket card) */
+  --panel: oklch(0.17 0.006 30);
+  --panel-ink: oklch(0.97 0.002 95);
+  --panel-ink-muted: oklch(0.68 0.006 95);
+  --panel-track: oklch(0.28 0.006 30);
+
+  /* accent — red (hold-red, default) */
+  --accent: oklch(0.58 0.21 24);
+  --accent-strong: oklch(0.48 0.21 24);
+  --accent-ink: oklch(0.98 0.004 24);
+  --accent-tint: oklch(0.93 0.05 24);
+  --accent-tint-ink: oklch(0.4 0.16 24);
+
+  --shell-max: 430px;
+  --radius-card: 16px;
+  --radius-control: 12px;
+}
+
+:root[data-accent="blue"] {
+  --accent: oklch(0.56 0.16 250);
+  --accent-strong: oklch(0.46 0.16 250);
+  --accent-ink: oklch(0.98 0.004 250);
+  --accent-tint: oklch(0.92 0.04 250);
+  --accent-tint-ink: oklch(0.4 0.13 250);
+}
+
+:root[data-accent="green"] {
+  --accent: oklch(0.6 0.17 145);
+  --accent-strong: oklch(0.49 0.17 145);
+  --accent-ink: oklch(0.98 0.004 145);
+  --accent-tint: oklch(0.92 0.06 145);
+  --accent-tint-ink: oklch(0.38 0.13 145);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-hairline: var(--hairline);
+  --color-panel: var(--panel);
+  --color-panel-ink: var(--panel-ink);
+  --color-panel-ink-muted: var(--panel-ink-muted);
+  --color-panel-track: var(--panel-track);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-tint-ink: var(--accent-tint-ink);
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-barlow-condensed);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+  overscroll-behavior-y: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@media (min-width: 431px) {
+  body {
+    background: oklch(0.9 0.004 95);
+  }
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  background: var(--bg);
+  position: relative;
+}
+
+.app-shell__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 431px) {
+  .app-shell {
+    width: var(--shell-max);
+    height: min(100dvh - 48px, 860px);
+    margin: 24px auto;
+    border-radius: 28px;
+    border: 1px solid var(--hairline);
+    overflow: hidden;
+  }
+}
