@@ -34,8 +34,8 @@ export const viewport: Viewport = {
 
 const THEME_INIT_SCRIPT = `
 try {
-  var a = localStorage.getItem("bouldy-accent");
-  if (a) document.documentElement.setAttribute("data-accent", a);
+  var a = localStorage.getItem("bouldy-accent") || "red";
+  document.documentElement.setAttribute("data-accent", a);
 } catch (e) {}
 `;
 
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      data-accent="red"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${barlowCondensed.variable} h-full antialiased`}
     >
       <head>

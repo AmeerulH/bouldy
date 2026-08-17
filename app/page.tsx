@@ -1,3 +1,7 @@
+import { redirect } from "next/navigation";
+import { logoutAction } from "@/lib/actions";
+import { clearSessionCookie, getSessionUser } from "@/lib/session";
+
 const DAYS = [
   { label: "Mon", date: "03" },
   { label: "Tue", date: "04" },
@@ -10,7 +14,13 @@ const DAYS = [
 
 const ACTIVE_DAY = "Thu";
 
-export default function Home() {
+export default async function Home() {
+  const user = await getSessionUser();
+  if (!user) {
+    await clearSessionCookie();
+    redirect("/login");
+  }
+
   return (
     <div className="flex flex-col gap-6 px-5 pb-8 pt-6">
       <header className="flex items-center justify-between">
@@ -19,10 +29,17 @@ export default function Home() {
             Good morning
           </p>
           <p className="font-display text-2xl font-extrabold uppercase leading-none text-ink">
-            Javier
+            {user.username}
           </p>
         </div>
-        <div className="h-10 w-10 rounded-full bg-accent-tint" />
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="rounded-full border border-hairline px-3.5 py-2 text-xs font-medium text-ink-muted"
+          >
+            Log out
+          </button>
+        </form>
       </header>
 
       <section className="rounded-2xl bg-panel px-5 py-5">
