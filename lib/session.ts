@@ -19,6 +19,11 @@ export async function clearSessionCookie() {
   store.delete(COOKIE_NAME);
 }
 
+export async function getSessionToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(COOKIE_NAME)?.value ?? null;
+}
+
 export async function getSessionUser(): Promise<UserResponse | null> {
   const store = await cookies();
   const token = store.get(COOKIE_NAME)?.value;
