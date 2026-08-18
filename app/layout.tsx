@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Barlow_Condensed } from "next/font/google";
-import { AppShell } from "@/components/app-shell";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import "./globals.css";
 
@@ -50,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
-        <AppShell>{children}</AppShell>
+        {children}
         <ThemeSwitcher />
       </body>
     </html>

@@ -52,17 +52,11 @@ export default async function Home() {
             {user.username}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            href="/history"
-            className="rounded-full border border-hairline px-3 py-2 text-xs font-medium text-ink-muted"
-          >
-            History
-          </Link>
+        <div className="shrink-0">
           <form action={logoutAction}>
             <button
               type="submit"
-              className="rounded-full border border-hairline px-3 py-2 text-xs font-medium text-ink-muted"
+              className="rounded-full border border-hairline px-3.5 py-2 text-xs font-medium text-ink-muted"
             >
               Log out
             </button>
