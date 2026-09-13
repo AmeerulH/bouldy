@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { loginAction } from "@/lib/actions";
+import { SubmitButton } from "@/components/submit-button";
+import { SlideTextButton } from "@/components/kokonutui/slide-text-button";
 
 export default async function LoginPage({
   searchParams,
@@ -46,19 +47,18 @@ export default async function LoginPage({
             className="rounded-xl border border-hairline bg-transparent px-4 py-3 text-sm text-ink outline-none focus:border-accent"
           />
         </label>
-        <button
+        <SubmitButton
           type="submit"
+          pendingLabel="Logging in"
           className="mt-2 w-full rounded-full bg-accent py-3.5 text-sm font-semibold text-accent-ink"
         >
           Log in
-        </button>
+        </SubmitButton>
       </form>
 
       <p className="text-center text-sm text-ink-muted">
         New to Bouldy?{" "}
-        <Link href="/signup" className="font-semibold text-ink">
-          Sign up
-        </Link>
+        <SlideTextButton href="/signup" text="Sign up" hoverText="Let’s go" />
       </p>
     </div>
   );

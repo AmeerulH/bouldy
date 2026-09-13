@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 const ACCENTS = [
   { id: "red", label: "Red", swatch: "oklch(0.58 0.21 24)" },
@@ -8,19 +8,29 @@ const ACCENTS = [
   { id: "green", label: "Green", swatch: "oklch(0.6 0.17 145)" },
 ] as const;
 
+const ACCENT_CHANGE_EVENT = "bouldy:accent-change";
+
+function subscribeToAccent(onStoreChange: () => void) {
+  window.addEventListener(ACCENT_CHANGE_EVENT, onStoreChange);
+  return () => window.removeEventListener(ACCENT_CHANGE_EVENT, onStoreChange);
+}
+
+function getClientAccent() {
+  return document.documentElement.getAttribute("data-accent") ?? "red";
+}
+
 // Temporary dev tool for comparing accent candidates — remove once one is locked in.
 export function ThemeSwitcher() {
-  const [active, setActive] = useState<string>("red");
-
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-accent") ?? "red";
-    setActive(current);
-  }, []);
+  const active = useSyncExternalStore(
+    subscribeToAccent,
+    getClientAccent,
+    () => "red",
+  );
 
   function selectAccent(id: string) {
     document.documentElement.setAttribute("data-accent", id);
     localStorage.setItem("bouldy-accent", id);
-    setActive(id);
+    window.dispatchEvent(new Event(ACCENT_CHANGE_EVENT));
   }
 
   return (

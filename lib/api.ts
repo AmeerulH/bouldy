@@ -147,6 +147,40 @@ export async function getRoutes(): Promise<Route[]> {
   return apiFetch("/routes/");
 }
 
+export async function getGymRoutes(gymId: number): Promise<Route[]> {
+  try {
+    return await apiFetch(`/gyms/${gymId}/routes`);
+  } catch (error) {
+    // Older deployments did not expose the gym-scoped convenience route.
+    // Keep the app usable while the backend rollout finishes.
+    if (error instanceof ApiError && (error.status === 404 || error.status >= 500)) {
+      const routes = await getRoutes();
+      return routes.filter((route) => route.gym_id === gymId);
+    }
+    throw error;
+  }
+}
+
+export async function createGym(input: {
+  name: string;
+  location: string;
+}): Promise<Gym> {
+  return apiFetch("/gyms/", { method: "POST", json: input });
+}
+
+export async function createRoute(input: {
+  gym_id: number;
+  route_name: string;
+  grade: string;
+  colour: string;
+  wall: string;
+  setter: string;
+  set_date: string;
+  styles: string[];
+}): Promise<Route> {
+  return apiFetch("/routes/", { method: "POST", json: input });
+}
+
 export async function listSessions(token: string): Promise<Session[]> {
   return apiFetch("/sessions/", { token });
 }

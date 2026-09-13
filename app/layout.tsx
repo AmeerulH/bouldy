@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Barlow_Condensed } from "next/font/google";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,30 +26,19 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: "cover",
 };
-
-const THEME_INIT_SCRIPT = `
-try {
-  var a = localStorage.getItem("bouldy-accent") || "red";
-  document.documentElement.setAttribute("data-accent", a);
-} catch (e) {}
-`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      data-accent="red"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${barlowCondensed.variable} h-full antialiased`}
-    >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
-      <body className="min-h-full flex flex-col">
+      >
+      <body suppressHydrationWarning className="min-h-full flex flex-col">
         {children}
-        <ThemeSwitcher />
       </body>
     </html>
   );

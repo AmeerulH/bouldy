@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { signupAction } from "@/lib/actions";
+import { SubmitButton } from "@/components/submit-button";
+import { SlideTextButton } from "@/components/kokonutui/slide-text-button";
 
 export default async function SignupPage({
   searchParams,
@@ -67,19 +68,18 @@ export default async function SignupPage({
             className="rounded-xl border border-hairline bg-transparent px-4 py-3 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-accent"
           />
         </label>
-        <button
+        <SubmitButton
           type="submit"
+          pendingLabel="Creating account"
           className="mt-2 w-full rounded-full bg-accent py-3.5 text-sm font-semibold text-accent-ink"
         >
           Create account
-        </button>
+        </SubmitButton>
       </form>
 
       <p className="text-center text-sm text-ink-muted">
         Already climbing with us?{" "}
-        <Link href="/login" className="font-semibold text-ink">
-          Log in
-        </Link>
+        <SlideTextButton href="/login" text="Log in" hoverText="Welcome back" />
       </p>
     </div>
   );

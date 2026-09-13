@@ -12,12 +12,22 @@ const TABS = [
     ),
   },
   {
-    href: "/history",
-    label: "History",
+    href: "/sessions",
+    label: "Sessions",
     icon: (
       <>
         <circle cx="12" cy="12" r="8" />
         <path d="M12 8v4l3 2" />
+      </>
+    ),
+  },
+  {
+    href: "/gyms",
+    label: "Gyms",
+    icon: (
+      <>
+        <path d="M5 20V10l7-6 7 6v10" />
+        <path d="M9 20v-5h6v5" />
       </>
     ),
   },
