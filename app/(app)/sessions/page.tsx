@@ -43,7 +43,7 @@ function OutcomeStat({ count, label, colour }: { count: number; label: string; c
 
 export default async function SessionsPage() {
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
 
   const [sessionResult, gymResult] = await Promise.allSettled([listSessions(token), getGyms()]);
   const sessions = sessionResult.status === "fulfilled" ? sessionResult.value : [];

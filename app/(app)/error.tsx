@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useTransition } from "react";
 
 export default function AppError({
   error,
@@ -9,6 +9,8 @@ export default function AppError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [isResetting, startTransition] = useTransition();
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -24,10 +26,18 @@ export default function AppError({
       </p>
       <button
         type="button"
-        onClick={reset}
+        onClick={() => startTransition(reset)}
+        disabled={isResetting}
+        aria-busy={isResetting}
         className="button-feedback min-h-12 rounded-full bg-accent px-5 text-sm font-bold text-accent-ink"
       >
-        Reload page
+        <span className={isResetting ? "invisible" : ""}>Reload page</span>
+        {isResetting ? (
+          <span className="button-loader" aria-live="polite">
+            <span className="button-loader__spinner" aria-hidden="true" />
+            Reloading
+          </span>
+        ) : null}
       </button>
     </main>
   );

@@ -21,6 +21,7 @@ const barlowCondensed = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "Bouldy",
   description: "Track your climbing sessions, sends, and progression.",
+  icons: { icon: "/icon.svg" },
 };
 
 export const viewport: Viewport = {

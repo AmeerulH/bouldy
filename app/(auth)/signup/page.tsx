@@ -1,6 +1,7 @@
 import { signupAction } from "@/lib/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { SlideTextButton } from "@/components/kokonutui/slide-text-button";
+import { AuthHeading } from "@/components/auth-heading";
 
 export default async function SignupPage({
   searchParams,
@@ -10,15 +11,8 @@ export default async function SignupPage({
   const { error } = await searchParams;
 
   return (
-    <div className="flex min-h-full flex-col justify-center gap-8 px-6 py-10">
-      <div>
-        <p className="text-xs font-medium tracking-wide text-ink-faint">
-          Bouldy
-        </p>
-        <h1 className="font-display text-3xl font-extrabold uppercase leading-none text-ink">
-          Climb your limits
-        </h1>
-      </div>
+    <main className="auth-page">
+      <AuthHeading signup />
 
       {error ? (
         <p className="rounded-xl bg-accent-tint px-4 py-3 text-sm text-accent-tint-ink">
@@ -26,7 +20,7 @@ export default async function SignupPage({
         </p>
       ) : null}
 
-      <form action={signupAction} className="flex flex-col gap-4">
+      <form action={signupAction} className="auth-form flex flex-col gap-4">
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-medium text-ink-muted">Username</span>
           <input
@@ -81,6 +75,6 @@ export default async function SignupPage({
         Already climbing with us?{" "}
         <SlideTextButton href="/login" text="Log in" hoverText="Welcome back" />
       </p>
-    </div>
+    </main>
   );
 }

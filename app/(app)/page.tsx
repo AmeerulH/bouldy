@@ -4,6 +4,8 @@ import { logoutAction } from "@/lib/actions";
 import { getSessionToken, getSessionUser } from "@/lib/session";
 import { getGyms, getSessionAttempts, listSessions, type Attempt, type Session } from "@/lib/api";
 import { SubmitButton } from "@/components/submit-button";
+import { BrandWordmark } from "@/components/brand-wordmark";
+import { RouteHold } from "@/components/route-hold";
 
 type SessionActivity = {
   session: Session;
@@ -20,7 +22,7 @@ function formatDate(value: string) {
 export default async function Home() {
   const user = await getSessionUser();
   if (!user) {
-    redirect("/login");
+    redirect("/welcome");
   }
 
   const token = await getSessionToken();
@@ -53,7 +55,7 @@ export default async function Home() {
     <main id="main-content" className="flex flex-col gap-7 px-5 pb-8 pt-6">
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-ink-muted">Keep showing up.</p>
+          <BrandWordmark />
           <form action={logoutAction}>
             <SubmitButton
               type="submit"
@@ -64,10 +66,12 @@ export default async function Home() {
             </SubmitButton>
           </form>
         </div>
-        <div className="min-w-0">
-          <h1 className="mt-1 truncate font-display text-4xl font-extrabold uppercase leading-[0.9] tracking-[-0.03em] text-ink">
-            {user.username}
-          </h1>
+        <div className="home-greeting">
+          <div className="min-w-0">
+            <p className="mb-3 truncate text-sm text-ink-muted" title={user.username}>Good to see you, {user.username}.</p>
+            <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.9] tracking-[-0.03em] text-ink">Keep<br />showing up.</h1>
+          </div>
+          <RouteHold colour="red" className="home-greeting__hold" />
         </div>
       </header>
 

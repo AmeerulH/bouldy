@@ -16,8 +16,8 @@ const TABS = [
     label: "Sessions",
     icon: (
       <>
-        <circle cx="12" cy="12" r="8" />
-        <path d="M12 8v4l3 2" />
+        <rect x="4" y="5" width="16" height="16" rx="2" />
+        <path d="M8 3v4m8-4v4M4 10h16" />
       </>
     ),
   },
@@ -26,8 +26,8 @@ const TABS = [
     label: "Gyms",
     icon: (
       <>
-        <path d="M5 20V10l7-6 7 6v10" />
-        <path d="M9 20v-5h6v5" />
+        <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
+        <circle cx="12" cy="10" r="2.5" />
       </>
     ),
   },
@@ -48,7 +48,7 @@ export function BottomNav() {
             key={tab.href}
             href={tab.href}
             aria-current={isActive ? "page" : undefined}
-            className="flex flex-1 flex-col items-center gap-1 py-1.5"
+            className="bottom-tab flex flex-1 flex-col items-center gap-1 py-1.5"
           >
             <svg
               width="20"

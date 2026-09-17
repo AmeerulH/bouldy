@@ -39,7 +39,7 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
   const [{ id }, { error, notice }] = await Promise.all([params, searchParams]);
   const sessionId = Number(id);
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
   if (!Number.isInteger(sessionId) || sessionId < 1) redirect("/sessions");
 
   const session = await getSession(token, sessionId);

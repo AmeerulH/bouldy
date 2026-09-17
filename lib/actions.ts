@@ -70,12 +70,12 @@ export async function signupAction(formData: FormData) {
 
 export async function logoutAction() {
   await clearSessionCookie();
-  redirect("/login");
+  redirect("/welcome");
 }
 
 export async function startSessionAction(formData: FormData) {
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
 
   const gymId = Number(formData.get("gym_id"));
   if (!Number.isInteger(gymId) || gymId < 1) {
@@ -102,7 +102,7 @@ export async function startSessionAction(formData: FormData) {
 
 export async function addGymAction(formData: FormData) {
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
 
   const name = String(formData.get("name") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
@@ -122,7 +122,7 @@ export async function addGymAction(formData: FormData) {
 
 export async function addRouteAction(formData: FormData) {
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
 
   const sessionId = Number(formData.get("session_id"));
   const gymId = Number(formData.get("gym_id"));
@@ -160,7 +160,7 @@ export async function addRouteAction(formData: FormData) {
 
 export async function logAttemptAction(formData: FormData) {
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
 
   const sessionId = Number(formData.get("session_id"));
   const routeId = Number(formData.get("route_id"));
@@ -198,7 +198,7 @@ export async function logAttemptAction(formData: FormData) {
 
 export async function correctAttemptAction(formData: FormData) {
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
 
   const sessionId = Number(formData.get("session_id"));
   const attemptId = Number(formData.get("attempt_id"));
@@ -240,7 +240,7 @@ export async function correctAttemptAction(formData: FormData) {
 
 export async function endSessionAction(formData: FormData) {
   const token = await getSessionToken();
-  if (!token) redirect("/login");
+  if (!token) redirect("/welcome");
 
   const sessionId = Number(formData.get("session_id"));
   const durationMinutes = Number(formData.get("duration_minutes") ?? 0);

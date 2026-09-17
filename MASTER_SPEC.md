@@ -28,7 +28,7 @@ flowchart LR
 
 ### Product principles
 
-- **Mobile first, always.** The desktop browser keeps the same phone-oriented experience rather than becoming a separate dashboard.
+- **Mobile first, always.** The desktop browser keeps the same phone-oriented experience rather than becoming a separate dashboard. At wider widths, it remains a full-height, square-edged mobile canvas rather than a floating rounded card.
 - **Fast while standing below a wall.** The important action should take a few obvious taps, have a clear outcome, and never require reading a dense screen.
 - **History is durable.** Retired routes remain attached to past sessions and attempts.
 - **A gym's language comes first.** Grades are initially stored as the gym displays them. The gym's grading-system label is free text, because local gyms use different systems.
@@ -279,6 +279,10 @@ sequenceDiagram
 
 - Server Components fetch page data by default. Use client components only for browser state or interaction that cannot be a Server Action.
 - All network mutations show an in-control loading state; a click must feel acknowledged immediately.
+- Internal navigation shows an immediate full-screen loading state, while slow server-rendered routes have dedicated `loading.tsx` fallbacks. Form mutations keep their feedback inside the pressed button.
+- Loading design: `BouldyLoader` reuses local detailed hold SVGs in three indeterminate variants: ascent (full-screen), traverse (page status), and hold (compact/account status). Button spinners stay circular. No fake progress percentages or forced waiting times.
+- `PageSkeleton` matches Home, Sessions journal, session detail, Gyms, login and signup. Each route has its own streaming fallback; History uses the Sessions fallback. Navigation displays the destination skeleton immediately and keeps the bottom navigation available. After eight seconds, loading states explain that data is still being fetched. Reduced-motion users see stationary holds. Skeleton geometry is decorative and hidden from assistive technology; status labels announce loading.
+- Development-only `/loading-preview` displays all three motifs and expandable skeleton examples. It returns not-found in production. These assets need no backend changes or external animation service.
 - Every interactive element has visible keyboard focus, touch-friendly targets, disabled/loading states, and a useful error message.
 - Use genuine fetched values in summaries. Show a good empty state rather than a made-up metric.
 - Do not add a desktop dashboard layout. At widths above 430px, preserve the focused mobile shell.
@@ -349,6 +353,16 @@ A signed-in user can:
 
 ## 10. Change log
 
+### Brand and motion update (17 September 2026)
+
+- Bolt B (`public/brand/bolt-b.svg`) is the selected Bouldy app mark. It is now the lockup symbol, browser/app icon (`app/icon.svg`), Home and auth identity. Crux and Three Moves remain archived proposals for reference.
+- Login and signup use the Bouldy lockup and detailed hold artwork; Home uses the same identity with a compact personal greeting and “Keep showing up” heading above real session data.
+- The surrounding viewport uses the same background as the mobile canvas; gray desktop gutters are removed. The mobile layout remains constrained to 430px on wide screens.
+- `/welcome` is the public landing experience for unauthenticated visits to `/`, with signup and login links. It never forces a timed delay. An authenticated visitor still opens their Home journal at `/`. Logout returns to `/welcome`; Login links back through “Meet Bouldy”.
+- If a stale browser cookie reaches an app route but fails the server-side user/session check, that route also redirects to `/welcome`. Session-required Server Actions follow the same rule.
+- Page navigation uses a 220ms directional slide. Horizontal swipes between Home, Sessions and Gyms require at least 90px and predominantly horizontal movement. Forms, controls, screen-edge gestures and session-detail pages do not initiate tab swipes. Bottom tabs remain the accessible alternative. Reduced-motion disables navigation motion and simplifies the welcome artwork entrance.
+- Logo proposals are standalone vectors under `public/brand/proposals/`: `bolt-b.svg` (A), `crux.svg` (B), `three-moves.svg` (C). All remain proposals pending the user's selection; none replaces the app icon. Development-only `/brand-preview` displays each at multiple sizes with SVG downloads. Both design preview routes are accessible without login only in development and return not-found in production.
+
 | Date | Decision |
 | --- | --- |
 | 2026-09-13 | Established this document as the required living master spec. |
@@ -359,3 +373,5 @@ A signed-in user can:
 | 2026-09-13 | Implemented functional gym creation and route creation flows against the existing API contract; grading-system, perceived-grade, photo, and beta-video fields remain clearly marked as backend-dependent. |
 | 2026-09-13 | Rebuilt the Sessions tab as the expressive session board: real latest-session stats, colour-matched local SVG hold assets, route-state cards, a live Log route action, and a compact complete journal beneath. |
 | 2026-09-13 | Replaced flat route markers with individually exported, detailed SVG hold assets across the full route-colour vocabulary; blue routes also support the triangle/arete hold variant. |
+| 2026-09-17 | Replaced the floating rounded desktop shell with a full-height square-edged mobile canvas and added immediate navigation overlays, route loading fallbacks, and button-level retry feedback for slow API paths. |
+| 2026-09-17 | Added three animated bouldering-hold loaders, six page-specific skeletons, destination-aware navigation feedback, slow-request messaging, reduced-motion support and a local loading-design preview. |
