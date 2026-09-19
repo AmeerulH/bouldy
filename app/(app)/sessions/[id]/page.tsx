@@ -14,6 +14,9 @@ import { getSessionToken } from "@/lib/session";
 import { addRouteAction, correctAttemptAction, endSessionAction, logAttemptAction } from "@/lib/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { RouteHold } from "@/components/route-hold";
+import { buttonStyles } from "@/components/ui/button";
+import { FeedbackMessage } from "@/components/ui/feedback-message";
+import { InputField, SelectField } from "@/components/ui/form-field";
 
 const RESULT_META: Record<AttemptResult, { label: string; className: string }> = {
   flash: { label: "⚡ Flash", className: "bg-[oklch(0.92_0.07_145)] text-[oklch(0.35_0.14_145)]" },
@@ -76,8 +79,8 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
         </span>
       </header>
 
-      {error ? <p role="alert" className="rounded-xl bg-accent-tint px-4 py-3 text-sm font-medium text-accent-tint-ink">{error}</p> : null}
-      {notice ? <p role="status" className="rounded-xl bg-[oklch(0.93_0.05_145)] px-4 py-3 text-sm font-medium text-[oklch(0.34_0.13_145)]">{notice}</p> : null}
+      {error ? <FeedbackMessage>{error}</FeedbackMessage> : null}
+      {notice ? <FeedbackMessage tone="success">{notice}</FeedbackMessage> : null}
 
       <section className="rounded-2xl bg-panel px-5 py-5 text-panel-ink" aria-label="Session summary">
         <div className="flex items-end justify-between gap-4">
@@ -163,28 +166,12 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
                       <form action={correctAttemptAction} className="mt-3 grid grid-cols-2 gap-3">
                         <input type="hidden" name="session_id" value={sessionId} />
                         <input type="hidden" name="attempt_id" value={attempt.id} />
-                        <label className="flex flex-col gap-1.5 text-xs font-semibold text-ink">
-                          Result
-                          <select
-                            name="result"
-                            defaultValue={attempt.result}
-                            className="min-h-11 rounded-xl border border-hairline bg-bg px-3 text-sm font-medium text-ink outline-none focus:border-accent"
-                          >
+                        <SelectField label="Result" compact name="result" defaultValue={attempt.result}>
                             {Object.entries(RESULT_META).map(([result, meta]) => (
                               <option key={result} value={result}>{meta.label}</option>
                             ))}
-                          </select>
-                        </label>
-                        <label className="flex flex-col gap-1.5 text-xs font-semibold text-ink">
-                          Attempts
-                          <input
-                            type="number"
-                            name="num_attempts"
-                            min={1}
-                            defaultValue={attempt.num_attempts}
-                            className="min-h-11 rounded-xl border border-hairline bg-bg px-3 text-sm font-medium text-ink outline-none focus:border-accent"
-                          />
-                        </label>
+                        </SelectField>
+                        <InputField label="Attempts" compact type="number" name="num_attempts" min={1} defaultValue={attempt.num_attempts} />
                         <p className="col-span-2 text-xs leading-5 text-ink-muted">
                           A flash is always one attempt. Corrections don&apos;t add another try.
                         </p>
@@ -214,18 +201,18 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
           <form action={addRouteAction} className="mt-5 flex flex-col gap-4">
             <input type="hidden" name="session_id" value={sessionId} />
             <input type="hidden" name="gym_id" value={gym.id} />
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">Route name<input name="route_name" required placeholder="e.g. Blue Note" className="min-h-12 rounded-xl border border-hairline bg-transparent px-3.5 text-base font-normal text-ink outline-none placeholder:text-ink-faint focus:border-accent" /></label>
+            <InputField label="Route name" name="route_name" required placeholder="e.g. Blue Note" />
             <div className="grid grid-cols-2 gap-3">
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">Gym grade<input name="grade" required placeholder="e.g. V3" className="min-h-12 rounded-xl border border-hairline bg-transparent px-3.5 text-base font-normal text-ink outline-none placeholder:text-ink-faint focus:border-accent" /></label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">Route colour<select name="colour" defaultValue="" className="min-h-12 rounded-xl border border-hairline bg-bg px-3 text-base font-normal text-ink outline-none focus:border-accent"><option value="">Not recorded</option>{COLOURS.map((colour) => <option key={colour} value={colour}>{colour}</option>)}</select></label>
+              <InputField label="Gym grade" name="grade" required placeholder="e.g. V3" />
+              <SelectField label="Route colour" name="colour" defaultValue=""><option value="">Not recorded</option>{COLOURS.map((colour) => <option key={colour} value={colour}>{colour}</option>)}</SelectField>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">Wall / area<input name="wall" placeholder="Optional" className="min-h-12 rounded-xl border border-hairline bg-transparent px-3.5 text-base font-normal text-ink outline-none placeholder:text-ink-faint focus:border-accent" /></label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">Main style<select name="style" defaultValue="" className="min-h-12 rounded-xl border border-hairline bg-bg px-3 text-base font-normal text-ink outline-none focus:border-accent"><option value="">Not recorded</option>{STYLE_OPTIONS.map((style) => <option key={style} value={style}>{style}</option>)}</select></label>
+              <InputField label="Wall / area" name="wall" placeholder="Optional" />
+              <SelectField label="Main style" name="style" defaultValue=""><option value="">Not recorded</option>{STYLE_OPTIONS.map((style) => <option key={style} value={style}>{style}</option>)}</SelectField>
             </div>
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">Setter<input name="setter" placeholder="Optional" className="min-h-12 rounded-xl border border-hairline bg-transparent px-3.5 text-base font-normal text-ink outline-none placeholder:text-ink-faint focus:border-accent" /></label>
+            <InputField label="Setter" name="setter" placeholder="Optional" />
             <p className="text-sm leading-5 text-ink-muted"><span className="font-semibold text-ink">Coming soon:</span> your felt grade, route photos, and beta videos will live with this route once the backend supports them.</p>
-            <SubmitButton type="submit" pendingLabel="Adding route" className="min-h-12 rounded-full bg-accent px-5 text-sm font-bold text-accent-ink">Add route</SubmitButton>
+            <SubmitButton type="submit" pendingLabel="Adding route" className={buttonStyles()}>Add route</SubmitButton>
           </form>
         </details>
       ) : null}
@@ -233,11 +220,11 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
       {!isEnded ? (
         <form action={endSessionAction} className="flex flex-col gap-3 border-t border-hairline pt-5">
           <input type="hidden" name="session_id" value={sessionId} />
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">Session length (minutes)<input type="number" name="duration_minutes" min={1} defaultValue={60} className="min-h-12 rounded-xl border border-hairline bg-transparent px-3.5 text-base font-normal text-ink outline-none focus:border-accent" /></label>
-          <SubmitButton type="submit" pendingLabel="Ending session" className="min-h-12 rounded-full bg-panel px-5 text-sm font-bold text-panel-ink">End session</SubmitButton>
+          <InputField label="Session length (minutes)" type="number" name="duration_minutes" min={1} defaultValue={60} />
+          <SubmitButton type="submit" pendingLabel="Ending session" className={buttonStyles({ variant: "dark" })}>End session</SubmitButton>
         </form>
       ) : (
-        <Link href="/sessions" className="button-feedback flex min-h-12 items-center justify-center rounded-full bg-accent px-5 text-sm font-bold text-accent-ink">Back to sessions</Link>
+        <Link href="/sessions" className={buttonStyles()}>Back to sessions</Link>
       )}
     </main>
   );

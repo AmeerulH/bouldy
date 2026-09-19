@@ -2,6 +2,9 @@ import { signupAction } from "@/lib/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { SlideTextButton } from "@/components/kokonutui/slide-text-button";
 import { AuthHeading } from "@/components/auth-heading";
+import { FeedbackMessage } from "@/components/ui/feedback-message";
+import { InputField } from "@/components/ui/form-field";
+import { buttonStyles } from "@/components/ui/button";
 
 export default async function SignupPage({
   searchParams,
@@ -14,58 +17,17 @@ export default async function SignupPage({
     <main className="auth-page">
       <AuthHeading signup />
 
-      {error ? (
-        <p className="rounded-xl bg-accent-tint px-4 py-3 text-sm text-accent-tint-ink">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FeedbackMessage>{error}</FeedbackMessage> : null}
 
       <form action={signupAction} className="auth-form flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-ink-muted">Username</span>
-          <input
-            type="text"
-            name="username"
-            autoComplete="username"
-            required
-            className="rounded-xl border border-hairline bg-transparent px-4 py-3 text-sm text-ink outline-none focus:border-accent"
-          />
-        </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-ink-muted">Email</span>
-          <input
-            type="email"
-            name="email"
-            autoComplete="email"
-            required
-            className="rounded-xl border border-hairline bg-transparent px-4 py-3 text-sm text-ink outline-none focus:border-accent"
-          />
-        </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-ink-muted">Password</span>
-          <input
-            type="password"
-            name="password"
-            autoComplete="new-password"
-            required
-            className="rounded-xl border border-hairline bg-transparent px-4 py-3 text-sm text-ink outline-none focus:border-accent"
-          />
-        </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-ink-muted">
-            Current grade <span className="text-ink-faint">(optional)</span>
-          </span>
-          <input
-            type="text"
-            name="current_grade"
-            placeholder="V4"
-            className="rounded-xl border border-hairline bg-transparent px-4 py-3 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-accent"
-          />
-        </label>
+        <InputField label="Username" type="text" name="username" autoComplete="username" required />
+        <InputField label="Email" type="email" name="email" autoComplete="email" required />
+        <InputField label="Password" type="password" name="password" autoComplete="new-password" required />
+        <InputField label={<>Current grade <span className="text-ink-faint">(optional)</span></>} type="text" name="current_grade" placeholder="V4" />
         <SubmitButton
           type="submit"
           pendingLabel="Creating account"
-          className="mt-2 w-full rounded-full bg-accent py-3.5 text-sm font-semibold text-accent-ink"
+          className={buttonStyles({ className: "mt-2 w-full" })}
         >
           Create account
         </SubmitButton>

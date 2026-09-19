@@ -267,6 +267,9 @@ sequenceDiagram
 | Concern | Location |
 | --- | --- |
 | Global tokens and interaction states | `app/globals.css` |
+| Canonical visual specification | `DESIGN.md` |
+| Design-system metadata and previews | `.impeccable/design.json` |
+| Reusable UI primitives | `components/ui/` |
 | Phone-sized app shell | `components/app-shell.tsx` |
 | Primary bottom navigation | `components/bottom-nav.tsx` |
 | Auth pages | `app/(auth)/login`, `app/(auth)/signup` |
@@ -290,10 +293,13 @@ sequenceDiagram
 
 ### Design system
 
+- `DESIGN.md` is the normative visual specification for future pages and components. Its creative north star is “The Climber’s Logbook.” Update it and `.impeccable/design.json` whenever foundational tokens, typography, motion, or shared component contracts change.
 - Restrained light product surface with a dark performance panel and a selectable accent colour.
 - `Barlow Condensed` is reserved for high-emphasis display headings; `Geist` carries controls, labels, data, and body copy.
 - Cards are purposeful information groups, not generic containers. Corners stay compact (12–16px) and button loading is local to the pressed button.
 - Motion is purposeful: 150–250ms for pressed states, list updates, and state transitions. No choreographed page-load sequence.
+- Shared visual behavior belongs in `components/ui/`. Page files retain data fetching, authorization, aggregation, and form composition; they must not duplicate button, field, feedback-message, or section-heading contracts.
+- Storybook is planned but not installed. Initial stories should cover BrandWordmark, RouteHold, RouteMark, buttons and pending states, fields, feedback messages, section headings, loaders, skeletons, and bottom navigation. Extract SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState before adding their stories.
 
 ## 7. Backend architecture and API contract
 
@@ -360,6 +366,8 @@ A signed-in user can:
 - The surrounding viewport uses the same background as the mobile canvas; gray desktop gutters are removed. The mobile layout remains constrained to 430px on wide screens.
 - `/welcome` is the public landing experience for unauthenticated visits to `/`, with signup and login links. It never forces a timed delay. An authenticated visitor still opens their Home journal at `/`. Logout returns to `/welcome`; Login links back through “Meet Bouldy”.
 - If a stale browser cookie reaches an app route but fails the server-side user/session check, that route also redirects to `/welcome`. Session-required Server Actions follow the same rule.
+- The authenticated route-group layout validates the session with `/auth/me` before rendering Home, Sessions, session detail, History, Gyms, or development-only authenticated previews. The proxy provides the fast missing-cookie redirect; the layout is the authoritative stale/invalid-token guard. Protected page content and bottom navigation never render for an unauthorized visitor.
+- Unknown URLs render a branded mobile 404 with a direct route back to `/`. The proxy only intercepts known protected sections, allowing genuine missing pages to reach this recovery screen. The `/` destination resolves to the journal for authenticated users and `/welcome` for unauthenticated users.
 - Page navigation uses a 220ms directional slide. Horizontal swipes between Home, Sessions and Gyms require at least 90px and predominantly horizontal movement. Forms, controls, screen-edge gestures and session-detail pages do not initiate tab swipes. Bottom tabs remain the accessible alternative. Reduced-motion disables navigation motion and simplifies the welcome artwork entrance.
 - Logo proposals are standalone vectors under `public/brand/proposals/`: `bolt-b.svg` (A), `crux.svg` (B), `three-moves.svg` (C). All remain proposals pending the user's selection; none replaces the app icon. Development-only `/brand-preview` displays each at multiple sizes with SVG downloads. Both design preview routes are accessible without login only in development and return not-found in production.
 
@@ -375,3 +383,4 @@ A signed-in user can:
 | 2026-09-13 | Replaced flat route markers with individually exported, detailed SVG hold assets across the full route-colour vocabulary; blue routes also support the triangle/arete hold variant. |
 | 2026-09-17 | Replaced the floating rounded desktop shell with a full-height square-edged mobile canvas and added immediate navigation overlays, route loading fallbacks, and button-level retry feedback for slow API paths. |
 | 2026-09-17 | Added three animated bouldering-hold loaders, six page-specific skeletons, destination-aware navigation feedback, slow-request messaging, reduced-motion support and a local loading-design preview. |
+| 2026-09-19 | Established “The Climber’s Logbook” as the canonical design system in `DESIGN.md` and `.impeccable/design.json`; extracted shared button, field, feedback, and section-heading primitives as the foundation for future Storybook coverage. |

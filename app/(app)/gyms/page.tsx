@@ -2,6 +2,10 @@ import Link from "next/link";
 import { addGymAction, startSessionAction } from "@/lib/actions";
 import { getGyms } from "@/lib/api";
 import { SubmitButton } from "@/components/submit-button";
+import { buttonStyles } from "@/components/ui/button";
+import { FeedbackMessage } from "@/components/ui/feedback-message";
+import { InputField } from "@/components/ui/form-field";
+import { SectionHeading } from "@/components/ui/section-heading";
 
 type GymsPageProps = {
   searchParams: Promise<{ error?: string; notice?: string }>;
@@ -19,16 +23,8 @@ export default async function GymsPage({ searchParams }: GymsPageProps) {
         </h1>
       </header>
 
-      {error ? (
-        <p role="alert" className="rounded-xl bg-accent-tint px-4 py-3 text-sm font-medium text-accent-tint-ink">
-          {error}
-        </p>
-      ) : null}
-      {notice ? (
-        <p role="status" className="rounded-xl bg-[oklch(0.93_0.05_145)] px-4 py-3 text-sm font-medium text-[oklch(0.34_0.13_145)]">
-          {notice}
-        </p>
-      ) : null}
+      {error ? <FeedbackMessage>{error}</FeedbackMessage> : null}
+      {notice ? <FeedbackMessage tone="success">{notice}</FeedbackMessage> : null}
 
       <details className="group border-y border-hairline py-4" open={gyms.length === 0}>
         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-display text-xl font-bold uppercase text-ink marker:content-none">
@@ -38,31 +34,15 @@ export default async function GymsPage({ searchParams }: GymsPageProps) {
           </span>
         </summary>
         <form action={addGymAction} className="mt-5 flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">
-            Gym name
-            <input
-              name="name"
-              required
-              placeholder="e.g. Bump Bouldering"
-              className="min-h-12 rounded-xl border border-hairline bg-transparent px-3.5 text-base font-normal text-ink outline-none placeholder:text-ink-faint focus:border-accent"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink">
-            Location
-            <input
-              name="location"
-              required
-              placeholder="e.g. Petaling Jaya"
-              className="min-h-12 rounded-xl border border-hairline bg-transparent px-3.5 text-base font-normal text-ink outline-none placeholder:text-ink-faint focus:border-accent"
-            />
-          </label>
+          <InputField label="Gym name" name="name" required placeholder="e.g. Bump Bouldering" />
+          <InputField label="Location" name="location" required placeholder="e.g. Petaling Jaya" />
           <p className="text-sm leading-5 text-ink-muted">
             <span className="font-semibold text-ink">Coming soon:</span> each gym will be able to label its grading system in its own words.
           </p>
           <SubmitButton
             type="submit"
             pendingLabel="Adding gym"
-            className="min-h-12 rounded-full bg-accent px-5 text-sm font-bold text-accent-ink"
+            className={buttonStyles()}
           >
             Add gym
           </SubmitButton>
@@ -70,12 +50,7 @@ export default async function GymsPage({ searchParams }: GymsPageProps) {
       </details>
 
       <section aria-labelledby="gym-list">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 id="gym-list" className="font-display text-2xl font-extrabold uppercase leading-none tracking-[-0.02em] text-ink">
-            All gyms
-          </h2>
-          <p className="text-sm text-ink-muted">{gyms.length} total</p>
-        </div>
+        <SectionHeading id="gym-list" aside={`${gyms.length} total`}>All gyms</SectionHeading>
         {gyms.length === 0 ? (
           <p className="mt-4 max-w-[33ch] text-sm leading-6 text-ink-muted">
             Add the first gym and you’ll be ready to start your first session.

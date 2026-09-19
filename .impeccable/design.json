@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T12:30:00+08:00",
+  "title": "Design System: Bouldy",
+  "extensions": {
+    "colorMeta": {
+      "send-red": { "role": "primary", "displayName": "Send Red", "canonical": "oklch(0.56 0.22 27)", "tonalRamp": ["oklch(0.15 0.06 27)", "oklch(0.25 0.1 27)", "oklch(0.36 0.15 27)", "oklch(0.47 0.21 27)", "oklch(0.56 0.22 27)", "oklch(0.7 0.15 27)", "oklch(0.84 0.08 27)", "oklch(0.95 0.03 27)"] },
+      "chalk-white": { "role": "neutral", "displayName": "Chalk White", "canonical": "oklch(0.985 0 0)", "tonalRamp": ["oklch(0.15 0 0)", "oklch(0.27 0 0)", "oklch(0.39 0 0)", "oklch(0.51 0 0)", "oklch(0.63 0 0)", "oklch(0.75 0 0)", "oklch(0.87 0 0)", "oklch(0.985 0 0)"] },
+      "panel-black": { "role": "neutral", "displayName": "Panel Black", "canonical": "oklch(0.22 0.003 0)", "tonalRamp": ["oklch(0.15 0.003 0)", "oklch(0.22 0.003 0)", "oklch(0.34 0.003 0)", "oklch(0.46 0.003 0)", "oklch(0.58 0.003 0)", "oklch(0.7 0.003 0)", "oklch(0.82 0.003 0)", "oklch(0.95 0.003 0)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Wall Display", "purpose": "Page-defining climbing language and branded states." },
+      "body": { "displayName": "Journal Body", "purpose": "Task copy, labels, forms, and session data." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "state-standard", "value": "180ms ease-out", "purpose": "Color, border, focus, and press feedback." },
+      { "name": "page-direction", "value": "220ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Directional movement between primary tabs." },
+      { "name": "hold-settle", "value": "500ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Branded hold arrival on welcome and error moments." }
+    ],
+    "breakpoints": [
+      { "name": "mobile-canvas", "value": "430px" },
+      { "name": "compact-phone", "value": "360px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single decisive action on a Bouldy surface.",
+      "html": "<button class=\"ds-btn-primary\">Start a session</button>",
+      "css": ".ds-btn-primary { min-height:48px; border:0; border-radius:999px; padding:0 20px; background:var(--accent, oklch(0.56 0.22 27)); color:var(--accent-ink, white); font:700 14px Geist,Arial,sans-serif; transition:filter 180ms ease-out,transform 180ms ease-out; } .ds-btn-primary:hover { filter:brightness(.97); transform:translateY(-1px); } .ds-btn-primary:active { transform:translateY(1px) scale(.985); } .ds-btn-primary:focus-visible { outline:3px solid var(--accent, oklch(0.56 0.22 27)); outline-offset:3px; }"
+    },
+    {
+      "name": "Dark Button",
+      "kind": "button",
+      "refersTo": "button-dark",
+      "description": "A secondary completion action on light surfaces.",
+      "html": "<button class=\"ds-btn-dark\">End session</button>",
+      "css": ".ds-btn-dark { min-height:48px; border:0; border-radius:999px; padding:0 20px; background:oklch(0.22 0.003 0); color:oklch(0.98 0 0); font:700 14px Geist,Arial,sans-serif; transition:transform 180ms ease-out; } .ds-btn-dark:hover { transform:translateY(-1px); } .ds-btn-dark:active { transform:translateY(1px) scale(.985); } .ds-btn-dark:focus-visible { outline:3px solid var(--accent, oklch(0.56 0.22 27)); outline-offset:3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "The canonical labelled text-entry control.",
+      "html": "<label class=\"ds-field\">Route name<input class=\"ds-input\" placeholder=\"e.g. Blue Note\"></label>",
+      "css": ".ds-field { display:flex; flex-direction:column; gap:6px; color:oklch(0.16 0 0); font:600 14px Geist,Arial,sans-serif; } .ds-input { min-height:48px; border:1px solid oklch(0.87 0.003 0); border-radius:12px; background:transparent; padding:0 14px; color:oklch(0.16 0 0); font:400 16px Geist,Arial,sans-serif; outline:none; } .ds-input:focus { border-color:var(--accent, oklch(0.56 0.22 27)); } .ds-input:focus-visible { outline:3px solid var(--accent, oklch(0.56 0.22 27)); outline-offset:3px; }"
+    },
+    {
+      "name": "Feedback Message",
+      "kind": "custom",
+      "description": "Inline error feedback that remains readable without shouting.",
+      "html": "<p class=\"ds-feedback\" role=\"alert\">We couldn’t save that attempt. Try again.</p>",
+      "css": ".ds-feedback { margin:0; border-radius:12px; padding:12px 16px; background:oklch(0.94 0.04 27); color:oklch(0.4 0.16 27); font:600 14px/1.5 Geist,Arial,sans-serif; }"
+    },
+    {
+      "name": "Section Heading",
+      "kind": "custom",
+      "description": "A compact section title with optional contextual count.",
+      "html": "<div class=\"ds-section-heading\"><h2>All sessions</h2><span>8 total</span></div>",
+      "css": ".ds-section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; color:oklch(0.16 0 0); } .ds-section-heading h2 { margin:0; font:800 24px/1 'Barlow Condensed',Impact,sans-serif; letter-spacing:-.02em; text-transform:uppercase; } .ds-section-heading span { color:oklch(0.42 0.003 0); font:400 14px Geist,Arial,sans-serif; }"
+    },
+    {
+      "name": "Session Summary",
+      "kind": "card",
+      "refersTo": "card-summary",
+      "description": "The flat dark snapshot used for current and recent climbing sessions.",
+      "html": "<section class=\"ds-summary\"><span>LAST SESSION</span><strong>Bump Bouldering</strong><p>4 routes · 3 sends</p></section>",
+      "css": ".ds-summary { border-radius:16px; padding:20px; background:oklch(0.22 0.003 0); color:oklch(0.98 0 0); } .ds-summary span { color:oklch(0.75 0.003 0); font:600 12px Geist,Arial,sans-serif; letter-spacing:.12em; } .ds-summary strong { display:block; margin-top:8px; font:800 28px/1 'Barlow Condensed',Impact,sans-serif; text-transform:uppercase; } .ds-summary p { margin:10px 0 0; color:oklch(0.75 0.003 0); font:400 14px Geist,Arial,sans-serif; }"
+    },
+    {
+      "name": "Result Badge",
+      "kind": "chip",
+      "refersTo": "badge-accent",
+      "description": "A compact climbing outcome label.",
+      "html": "<span class=\"ds-result\">⚡ Flash</span>",
+      "css": ".ds-result { display:inline-flex; border-radius:999px; padding:4px 10px; background:oklch(0.92 0.07 145); color:oklch(0.35 0.14 145); font:700 12px Geist,Arial,sans-serif; }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "description": "Three equal task destinations with one active indicator.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-tab ds-active\" href=\"#\">Home</a><a class=\"ds-tab\" href=\"#\">Sessions</a><a class=\"ds-tab\" href=\"#\">Gyms</a></nav>",
+      "css": ".ds-nav { display:flex; border-top:1px solid oklch(0.87 0.003 0); background:oklch(0.985 0 0); } .ds-tab { position:relative; flex:1; padding:16px 8px; color:oklch(0.54 0.003 0); text-align:center; text-decoration:none; font:500 11px Geist,Arial,sans-serif; } .ds-tab:focus-visible { outline:3px solid var(--accent, oklch(0.56 0.22 27)); outline-offset:-3px; } .ds-active { color:var(--accent, oklch(0.56 0.22 27)); } .ds-active::after { content:''; position:absolute; right:calc(50% - 9px); bottom:6px; width:18px; height:2px; border-radius:2px; background:currentColor; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Climber’s Logbook",
+    "overview": "Bouldy feels like the compact notebook a climber reaches for between attempts: direct, durable, personal, and fast to scan with chalky hands. Its mobile-only canvas pairs hard-working neutral surfaces with one decisive send-red accent, gym-signage display type, quiet interface text, and detailed climbing holds used as functional identity markers.",
+    "keyCharacteristics": ["Mobile-canvas composition", "Flat tonal hierarchy", "Condensed climbing identity with readable interface text", "Tactile hold assets used with restraint", "Reusable state-complete primitives"],
+    "rules": [
+      { "name": "The One Red Rule", "body": "Send Red marks the current action or state. If several unrelated elements compete in red, remove red until the hierarchy is obvious.", "section": "colors" },
+      { "name": "The Two-Voice Rule", "body": "Barlow Condensed speaks for climbing identity; Geist speaks for interaction.", "section": "typography" },
+      { "name": "The Flat Wall Rule", "body": "Resting cards and controls have no drop shadow.", "section": "elevation" }
+    ],
+    "dos": ["Do build edge-to-edge at 430px and below.", "Do use shared UI primitives before writing new visual markup.", "Do pair every loading mutation with visible feedback."],
+    "donts": ["Don't introduce a desktop layout.", "Don't use cream, gradients, glassmorphism, or sketch-style SVGs.", "Don't create page-local styling when a shared component can own it."]
+  }
+}
