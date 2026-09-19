@@ -1,0 +1,19 @@
+.storybook-canvas {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans, Geist), Arial, Helvetica, sans-serif;
+}
+
+.storybook-frame {
+  width: min(100%, var(--shell-max));
+  min-height: 220px;
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.storybook-frame--dark {
+  background: var(--panel);
+  color: var(--panel-ink);
+}

@@ -16,6 +16,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Component library
+
+Bouldy’s visual rules live in [`DESIGN.md`](./DESIGN.md). Reusable interface primitives live under `components/ui`, while signature components such as route holds, loaders, navigation, and the wordmark remain under `components`.
+
+Run Storybook locally:
+
+```bash
+npm run storybook
+```
+
+Open [http://localhost:6006](http://localhost:6006). Build the static component library with:
+
+```bash
+npm run build-storybook
+```
+
+New reusable components should include stories covering their normal, interactive, disabled, loading, error, and reduced-motion states where applicable.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

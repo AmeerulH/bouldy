@@ -299,7 +299,7 @@ sequenceDiagram
 - Cards are purposeful information groups, not generic containers. Corners stay compact (12–16px) and button loading is local to the pressed button.
 - Motion is purposeful: 150–250ms for pressed states, list updates, and state transitions. No choreographed page-load sequence.
 - Shared visual behavior belongs in `components/ui/`. Page files retain data fetching, authorization, aggregation, and form composition; they must not duplicate button, field, feedback-message, or section-heading contracts.
-- Storybook is planned but not installed. Initial stories should cover BrandWordmark, RouteHold, RouteMark, buttons and pending states, fields, feedback messages, section headings, loaders, skeletons, and bottom navigation. Extract SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState before adding their stories.
+- Storybook 10 uses the official `@storybook/nextjs-vite` framework with Docs and Accessibility addons. Run `npm run storybook` for the local library or `npm run build-storybook` for the static build. Current stories cover BrandWordmark, AuthHeading, RouteHold, RouteMark, buttons, submit buttons, fields, feedback messages, section headings, loaders, all page skeletons, and bottom navigation. Extract SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState before adding their stories.
 
 ## 7. Backend architecture and API contract
 
@@ -384,3 +384,4 @@ A signed-in user can:
 | 2026-09-17 | Replaced the floating rounded desktop shell with a full-height square-edged mobile canvas and added immediate navigation overlays, route loading fallbacks, and button-level retry feedback for slow API paths. |
 | 2026-09-17 | Added three animated bouldering-hold loaders, six page-specific skeletons, destination-aware navigation feedback, slow-request messaging, reduced-motion support and a local loading-design preview. |
 | 2026-09-19 | Established “The Climber’s Logbook” as the canonical design system in `DESIGN.md` and `.impeccable/design.json`; extracted shared button, field, feedback, and section-heading primitives as the foundation for future Storybook coverage. |
+| 2026-09-19 | Installed Storybook 10 with the Next.js Vite framework, Docs and Accessibility addons; added initial stories for Bouldy’s reusable primitives, brand, climbing assets, navigation, loaders, and page skeletons. |
