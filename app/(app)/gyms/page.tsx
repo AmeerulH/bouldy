@@ -58,22 +58,16 @@ export default async function GymsPage({ searchParams }: GymsPageProps) {
         ) : (
           <div className="mt-4 divide-y divide-hairline border-y border-hairline">
             {gyms.map((gym) => (
-              <form key={gym.id} action={startSessionAction} className="py-4">
-                <input type="hidden" name="gym_id" value={gym.id} />
-                <SubmitButton
-                  type="submit"
-                  pendingLabel="Starting session"
-                  className="flex min-h-13 w-full items-center justify-between gap-4 text-left"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate font-display text-xl font-bold uppercase leading-none text-ink">
-                      {gym.name}
-                    </span>
-                    <span className="mt-1.5 block truncate text-sm text-ink-muted">{gym.location}</span>
-                  </span>
-                  <span aria-hidden="true" className="text-xl text-accent">→</span>
-                </SubmitButton>
-              </form>
+              <div key={gym.id} className="flex items-center gap-3 py-4">
+                <Link href={`/gyms/${gym.id}`} className="button-feedback min-w-0 flex-1 py-2">
+                  <span className="block truncate font-display text-xl font-bold uppercase leading-none text-ink">{gym.name}</span>
+                  <span className="mt-1.5 block truncate text-sm text-ink-muted">{gym.location} · View routes</span>
+                </Link>
+                <form action={startSessionAction}>
+                  <input type="hidden" name="gym_id" value={gym.id} />
+                  <SubmitButton type="submit" pendingLabel="Starting" className="min-h-11 rounded-full bg-panel px-4 text-xs font-bold text-panel-ink">Start</SubmitButton>
+                </form>
+              </div>
             ))}
           </div>
         )}

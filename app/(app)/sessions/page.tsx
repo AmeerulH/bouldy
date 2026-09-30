@@ -149,8 +149,11 @@ export default async function SessionsPage() {
                     <Link key={route.id} href={`/sessions/${featured.session.id}`} className="button-feedback grid grid-cols-[62px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-hairline bg-bg px-3 py-3">
                       <RouteHold colour={route.colour} routeName={route.route_name} className="h-[58px] w-[58px]" />
                       <div className="min-w-0">
-                        <div className="flex items-baseline gap-2"><span className="font-display text-3xl font-extrabold leading-none text-ink">{route.grade}</span><h3 className="truncate font-display text-lg font-bold uppercase leading-none text-ink">{route.route_name}</h3></div>
-                        {route.styles.length > 0 ? <div className="mt-2 flex flex-wrap gap-1">{route.styles.slice(0, 2).map((style) => <span key={style} className="rounded-full bg-[oklch(0.93_0.002_0)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-muted">{style}</span>)}</div> : <p className="mt-2 text-xs text-ink-muted">{route.wall || "Route details pending"}</p>}
+                        <p className="font-display text-3xl font-extrabold leading-none text-ink">{route.grade}</p>
+                        <p className="mt-1 text-xs font-semibold text-ink-muted">{route.colour || "Colour not recorded"}{route.wall ? ` · ${route.wall}` : ""}</p>
+                        {route.styles.length > 0 ? <div className="mt-2 flex flex-wrap gap-1">{route.styles.slice(0, 2).map((style) => <span key={style} className="rounded-full bg-[oklch(0.93_0.002_0)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-muted">{style}</span>)}</div> : null}
+                        <h3 className="mt-2 truncate text-sm font-semibold text-ink">{route.route_name}</h3>
+                        {route.setter ? <p className="mt-1 truncate text-xs text-ink-muted">Set by {route.setter}</p> : null}
                       </div>
                       <div className="min-w-[70px] text-right">
                         <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-muted">Attempts</p>

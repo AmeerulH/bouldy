@@ -7,10 +7,13 @@ import {
   createGym,
   createRoute,
   createSession,
+  getAttempt,
   getMe,
+  getRoute,
   loginUser,
   registerUser,
   updateAttempt,
+  updateRoute,
   updateSession,
   type AttemptResult,
 } from "@/lib/api";
@@ -19,6 +22,7 @@ import {
   getSessionToken,
   setSessionCookie,
 } from "@/lib/session";
+import { ROUTE_COLOURS, ROUTE_STYLES } from "@/lib/route-options";
 
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -131,12 +135,11 @@ export async function addRouteAction(formData: FormData) {
   const colour = String(formData.get("colour") ?? "").trim();
   const wall = String(formData.get("wall") ?? "").trim();
   const setter = String(formData.get("setter") ?? "").trim();
-  const style = String(formData.get("style") ?? "").trim();
+  const styles = readRouteStyles(formData);
+  const destination = Number.isInteger(sessionId) && sessionId > 0 ? `/sessions/${sessionId}` : `/gyms/${gymId}`;
 
-  if (!Number.isInteger(sessionId) || !Number.isInteger(gymId) || !routeName || !grade) {
-    redirect(
-      `/sessions/${sessionId}?error=${encodeURIComponent("Add a route name and the gym's grade.")}`,
-    );
+  if (!Number.isInteger(gymId) || gymId < 1 || !routeName || !grade || !isRouteColour(colour)) {
+    redirect(`${destination}?error=${encodeURIComponent("Add the gym grade, route colour, and route name.")}`);
   }
 
   try {
@@ -144,18 +147,64 @@ export async function addRouteAction(formData: FormData) {
       gym_id: gymId,
       route_name: routeName,
       grade,
-      colour: colour || "Unspecified",
+      colour,
       wall,
       setter,
       set_date: new Date().toISOString().slice(0, 10),
-      styles: style ? [style] : [],
+      styles,
     });
   } catch (err) {
     const message =
       err instanceof ApiError ? err.message : "We couldn't add that route. Try again.";
-    redirect(`/sessions/${sessionId}?error=${encodeURIComponent(message)}`);
+    redirect(`${destination}?error=${encodeURIComponent(message)}`);
   }
-  redirect(`/sessions/${sessionId}?notice=${encodeURIComponent("Route added to this gym.")}`);
+  redirect(`${destination}?notice=${encodeURIComponent("Route added to this gym.")}`);
+}
+
+function isRouteColour(colour: string) {
+  return ROUTE_COLOURS.some((option) => option.toLowerCase() === colour.toLowerCase());
+}
+
+function readRouteStyles(formData: FormData) {
+  const requested = [formData.get("main_style"), ...formData.getAll("style")].map(String);
+  return [...new Set(requested)].filter((style) =>
+    ROUTE_STYLES.some((option) => option === style),
+  );
+}
+
+export async function editRouteAction(formData: FormData) {
+  const token = await getSessionToken();
+  if (!token) redirect("/welcome");
+
+  const gymId = Number(formData.get("gym_id"));
+  const routeId = Number(formData.get("route_id"));
+  const destination = `/gyms/${gymId}`;
+  const routeName = String(formData.get("route_name") ?? "").trim();
+  const grade = String(formData.get("grade") ?? "").trim();
+  const colour = String(formData.get("colour") ?? "").trim();
+
+  if (!Number.isInteger(gymId) || gymId < 1 || !Number.isInteger(routeId) || routeId < 1 || !routeName || !grade || !isRouteColour(colour)) {
+    redirect(`${destination}?error=${encodeURIComponent("Add the gym grade, route colour, and route name.")}`);
+  }
+
+  try {
+    const current = await getRoute(routeId);
+    if (current.gym_id !== gymId) {
+      throw new ApiError(400, "That route does not belong to this gym.");
+    }
+    await updateRoute(routeId, {
+      route_name: routeName,
+      grade,
+      colour,
+      wall: String(formData.get("wall") ?? "").trim(),
+      setter: String(formData.get("setter") ?? "").trim(),
+      styles: readRouteStyles(formData),
+    });
+  } catch (err) {
+    const message = err instanceof ApiError ? err.message : "We couldn't save that route. Try again.";
+    redirect(`${destination}?error=${encodeURIComponent(message)}`);
+  }
+  redirect(`${destination}?notice=${encodeURIComponent("Route updated.")}`);
 }
 
 export async function logAttemptAction(formData: FormData) {
@@ -164,28 +213,40 @@ export async function logAttemptAction(formData: FormData) {
 
   const sessionId = Number(formData.get("session_id"));
   const routeId = Number(formData.get("route_id"));
-  const result = String(formData.get("result")) as AttemptResult;
+  const intent = String(formData.get("intent") ?? "");
   const existingAttemptId = formData.get("attempt_id");
-  const existingNumAttempts = Number(formData.get("num_attempts") ?? 0);
 
   if (!Number.isInteger(sessionId) || !Number.isInteger(routeId)) {
     redirect(`/sessions/${sessionId}?error=${encodeURIComponent("Choose a route before logging an attempt.")}`);
   }
 
-  if (existingAttemptId && result === "flash") {
-    redirect(
-      `/sessions/${sessionId}?error=${encodeURIComponent("A flash can only be recorded on the first attempt.")}`,
-    );
+  if (!["attempt", "flash", "send", "zone"].includes(intent)) {
+    redirect(`/sessions/${sessionId}?error=${encodeURIComponent("Choose an attempt action.")}`);
   }
 
   try {
+    if (intent === "zone") {
+      const route = await getRoute(routeId);
+      if (!route.is_competition) {
+        throw new ApiError(400, "Zone is only available for competition routes.");
+      }
+    }
     if (existingAttemptId) {
-      await updateAttempt(token, Number(existingAttemptId), {
-        num_attempts: existingNumAttempts + 1,
-        result,
-      });
+      const current = await getAttempt(token, Number(existingAttemptId));
+      if (current.session_id !== sessionId || current.route_id !== routeId) {
+        throw new ApiError(400, "That route log no longer matches this session. Reload and try again.");
+      }
+      if (intent === "flash" || current.result === "flash" || current.result === "send") {
+        throw new ApiError(400, "This route is already complete. Use correction to change its result.");
+      }
+      await updateAttempt(token, current.id, intent === "send"
+        ? { result: "send" }
+        : { num_attempts: current.num_attempts + 1, result: intent === "zone" ? "zone" : current.result === "zone" ? "zone" : "project" });
     } else {
-      await createAttempt(token, sessionId, { route_id: routeId, num_attempts: 1, result });
+      if (intent === "send") {
+        throw new ApiError(400, "Log a try first, or choose Flash for a first-try send.");
+      }
+      await createAttempt(token, sessionId, { route_id: routeId, num_attempts: 1, result: intent === "flash" ? "flash" : intent === "zone" ? "zone" : "project" });
     }
   } catch (err) {
     const message =
@@ -225,6 +286,14 @@ export async function correctAttemptAction(formData: FormData) {
   }
 
   try {
+    const current = await getAttempt(token, attemptId);
+    if (current.session_id !== sessionId) {
+      throw new ApiError(400, "That route log no longer matches this session. Reload and try again.");
+    }
+    if (result === "zone" && current.result !== "zone") {
+      const route = await getRoute(current.route_id);
+      if (!route.is_competition) throw new ApiError(400, "Zone is only available for competition routes.");
+    }
     await updateAttempt(token, attemptId, {
       num_attempts: numAttempts,
       result,

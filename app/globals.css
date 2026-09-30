@@ -340,6 +340,11 @@ body {
 .route-mark--pink { background: oklch(0.61 0.18 350); }
 .route-mark--black { background: oklch(0.2 0 0); }
 .route-mark--white { background: oklch(0.95 0 0); color: var(--ink); border: 1px solid var(--hairline); }
+.route-mark--teal { background: oklch(0.65 0.13 190); }
+.route-mark--mint { background: oklch(0.82 0.1 155); color: var(--ink); }
+.route-mark--grey { background: oklch(0.62 0.01 240); }
+.route-mark--brown { background: oklch(0.47 0.07 55); }
+.route-mark--transparent { background: oklch(0.93 0.03 200 / 0.6); color: var(--ink); border: 1px solid oklch(0.68 0.07 200); }
 .route-mark--default { background: var(--panel-track); }
 
 

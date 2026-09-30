@@ -118,6 +118,7 @@ The palette is restrained and functional: near-black and neutral white carry the
 ### Secondary
 
 - **Route Blue and Route Green:** Optional user-selectable accent themes and semantic route-result colors. They never compete with the active theme accent on the same control.
+- **Hold colours:** User-selected route metadata is separate from the brand accent. The shared picker in `components/route-form.tsx` uses the exact palette in `lib/route-options.ts` and the matching detailed artwork in `public/route-holds/`. It includes teal, mint, grey, brown, and transparent alongside the original nine colours. Never substitute a blue hold for an unknown colour; use neutral grey.
 
 ### Neutral
 
@@ -216,6 +217,7 @@ All reusable visual components belong under `components/`; foundational primitiv
 
 - **Ready now:** BrandWordmark, RouteHold, RouteMark, button variants, SubmitButton states, InputField, SelectField, FeedbackMessage, SectionHeading, BouldyLoader, PageLoader, PageSkeleton, BottomNav.
 - **Extract next:** SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState.
+- **RouteForm:** Reused in the session and gym route editor. Storybook covers add and edit states; grade and hold colour lead, with style expansion and supporting metadata following.
 - **Keep page-level:** Data fetching, authorization redirects, server actions, route aggregation, and complete page compositions.
 
 ## Do's and Don'ts

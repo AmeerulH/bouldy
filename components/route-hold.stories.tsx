@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { RouteHold } from "./route-hold";
+import { ROUTE_COLOURS } from "@/lib/route-options";
 
-const colours = ["red", "blue", "green", "yellow", "orange", "purple", "pink", "black", "white"];
+const colours = ROUTE_COLOURS.map((colour) => colour.toLowerCase());
 
 const meta = {
   title: "Climbing/Route Hold",

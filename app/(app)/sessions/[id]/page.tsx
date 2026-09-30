@@ -14,6 +14,7 @@ import { getSessionToken } from "@/lib/session";
 import { addRouteAction, correctAttemptAction, endSessionAction, logAttemptAction } from "@/lib/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { RouteHold } from "@/components/route-hold";
+import { RouteForm } from "@/components/route-form";
 import { buttonStyles } from "@/components/ui/button";
 import { FeedbackMessage } from "@/components/ui/feedback-message";
 import { InputField, SelectField } from "@/components/ui/form-field";
@@ -22,11 +23,8 @@ const RESULT_META: Record<AttemptResult, { label: string; className: string }> =
   flash: { label: "⚡ Flash", className: "bg-[oklch(0.92_0.07_145)] text-[oklch(0.35_0.14_145)]" },
   send: { label: "Send", className: "bg-[oklch(0.92_0.05_255)] text-[oklch(0.39_0.15_255)]" },
   zone: { label: "Zone", className: "bg-[oklch(0.94_0.06_85)] text-[oklch(0.42_0.13_85)]" },
-  project: { label: "Project", className: "bg-accent-tint text-accent-tint-ink" },
+  project: { label: "In progress", className: "bg-accent-tint text-accent-tint-ink" },
 };
-
-const STYLE_OPTIONS = ["Slab", "Vertical", "Overhang", "Roof", "Crimps", "Slopers", "Pinches", "Jugs", "Pockets", "Dyno", "Static", "Balance", "Mantle", "Heel Hook", "Toe Hook"];
-const COLOURS = ["Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink", "Black", "White"];
 
 type SessionPageProps = {
   params: Promise<{ id: string }>;
@@ -102,7 +100,7 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
             <p className="text-sm text-ink-muted">Active routes at {gym.name}</p>
             <h2 id="route-list" className="mt-1 font-display text-2xl font-extrabold uppercase leading-none tracking-[-0.02em] text-ink">Route log</h2>
           </div>
-          {!isEnded ? <span className="text-xs font-semibold text-accent">Log a try or correct it</span> : null}
+          {!isEnded ? <span className="text-xs font-semibold text-accent">Track each try</span> : null}
         </div>
 
         {visibleRoutes.length === 0 ? (
@@ -111,7 +109,7 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
           <div className="mt-4 flex flex-col gap-3">
             {visibleRoutes.map((route) => {
               const attempt = attemptByRoute.get(route.id);
-              const allowedResults: AttemptResult[] = attempt ? ["project", "zone", "send"] : ["flash", "project", "zone", "send"];
+              const completed = attempt?.result === "flash" || attempt?.result === "send";
               const retired = route.status === "retired";
               return (
                 <article key={route.id} className="rounded-2xl border border-hairline bg-bg px-4 py-4">
@@ -120,11 +118,8 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="flex items-baseline gap-2">
-                            <span className="shrink-0 font-display text-3xl font-extrabold leading-none text-ink">{route.grade}</span>
-                            <h3 className="truncate font-display text-xl font-bold uppercase leading-none text-ink">{route.route_name}</h3>
-                          </div>
-                          <p className="mt-1.5 text-sm text-ink-muted">{route.wall || "Wall not recorded"}{retired ? " · Retired route" : ""}</p>
+                          <p className="truncate font-display text-3xl font-extrabold uppercase leading-none text-ink">{route.grade}</p>
+                          <p className="mt-1.5 text-sm font-semibold text-ink-muted">{route.colour || "Colour not recorded"}{route.wall ? ` · ${route.wall}` : ""}{retired ? " · Retired" : ""}</p>
                         </div>
                         <div className="shrink-0 text-right">
                           <p className="text-xs font-medium tracking-wide text-ink-muted">{statusSummary(attempt)}</p>
@@ -133,31 +128,34 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
                       </div>
                       {route.styles.length > 0 ? (
                         <div className="mt-3 flex flex-wrap gap-1.5">
-                          {route.styles.slice(0, 3).map((style) => <span key={style} className="rounded-full bg-[oklch(0.93_0.002_0)] px-2.5 py-1 text-xs font-semibold text-ink-muted">{style}</span>)}
+                          {route.styles.map((style) => <span key={style} className="rounded-full bg-[oklch(0.93_0.002_0)] px-2.5 py-1 text-xs font-semibold text-ink-muted">{style}</span>)}
                         </div>
                       ) : null}
+                      <h3 className="mt-3 truncate text-sm font-semibold text-ink">{route.route_name}</h3>
+                      {route.setter ? <p className="mt-1 text-xs text-ink-muted">Set by {route.setter}</p> : null}
                     </div>
                   </div>
 
-                  {!isEnded && !retired ? (
+                  {!isEnded && !retired && !completed ? (
                     <div className="mt-4 grid grid-cols-2 gap-2 border-t border-hairline pt-3">
-                      {allowedResults.map((result) => (
-                        <form key={result} action={logAttemptAction}>
+                      {(["attempt", attempt ? "send" : "flash", ...(route.is_competition ? ["zone"] : [])] as const).map((intent) => (
+                        <form key={intent} action={logAttemptAction}>
                           <input type="hidden" name="session_id" value={sessionId} />
                           <input type="hidden" name="route_id" value={route.id} />
-                          <input type="hidden" name="result" value={result} />
-                          {attempt ? <><input type="hidden" name="attempt_id" value={attempt.id} /><input type="hidden" name="num_attempts" value={attempt.num_attempts} /></> : null}
+                          <input type="hidden" name="intent" value={intent} />
+                          {attempt ? <input type="hidden" name="attempt_id" value={attempt.id} /> : null}
                           <SubmitButton
                             type="submit"
                             pendingLabel="Saving"
-                            className={`min-h-11 w-full rounded-xl px-3 text-sm font-bold ${result === "flash" ? "bg-[oklch(0.92_0.07_145)] text-[oklch(0.35_0.14_145)]" : "bg-[oklch(0.93_0.002_0)] text-ink"}`}
+                            className={`min-h-11 w-full rounded-xl px-3 text-sm font-bold ${intent === "flash" ? "bg-[oklch(0.92_0.07_145)] text-[oklch(0.35_0.14_145)]" : intent === "send" ? "bg-panel text-panel-ink" : "bg-[oklch(0.93_0.002_0)] text-ink"}`}
                           >
-                            {result === "flash" ? "⚡ Flash" : `Log ${RESULT_META[result].label}`}
+                            {intent === "flash" ? "⚡ Flash" : intent === "send" ? "Sent" : intent === "zone" ? "Reached zone" : "Log attempt"}
                           </SubmitButton>
                         </form>
                       ))}
                     </div>
                   ) : null}
+                  {attempt && !isEnded && completed ? <p className="mt-4 border-t border-hairline pt-3 text-xs text-ink-muted">Route complete · {statusSummary(attempt)}</p> : null}
                   {attempt && !isEnded ? (
                     <details className="group mt-3 border-t border-hairline pt-3">
                       <summary className="min-h-11 cursor-pointer list-none pt-2 text-sm font-semibold text-ink-muted underline underline-offset-4 marker:content-none">
@@ -167,7 +165,7 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
                         <input type="hidden" name="session_id" value={sessionId} />
                         <input type="hidden" name="attempt_id" value={attempt.id} />
                         <SelectField label="Result" compact name="result" defaultValue={attempt.result}>
-                            {Object.entries(RESULT_META).map(([result, meta]) => (
+                            {Object.entries(RESULT_META).filter(([result]) => result !== "zone" || route.is_competition || attempt.result === "zone").map(([result, meta]) => (
                               <option key={result} value={result}>{meta.label}</option>
                             ))}
                         </SelectField>
@@ -198,22 +196,7 @@ export default async function SessionPage({ params, searchParams }: SessionPageP
             Add a route
             <span className="grid h-8 w-8 place-items-center rounded-full bg-accent text-lg leading-none text-accent-ink group-open:rotate-45">+</span>
           </summary>
-          <form action={addRouteAction} className="mt-5 flex flex-col gap-4">
-            <input type="hidden" name="session_id" value={sessionId} />
-            <input type="hidden" name="gym_id" value={gym.id} />
-            <InputField label="Route name" name="route_name" required placeholder="e.g. Blue Note" />
-            <div className="grid grid-cols-2 gap-3">
-              <InputField label="Gym grade" name="grade" required placeholder="e.g. V3" />
-              <SelectField label="Route colour" name="colour" defaultValue=""><option value="">Not recorded</option>{COLOURS.map((colour) => <option key={colour} value={colour}>{colour}</option>)}</SelectField>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <InputField label="Wall / area" name="wall" placeholder="Optional" />
-              <SelectField label="Main style" name="style" defaultValue=""><option value="">Not recorded</option>{STYLE_OPTIONS.map((style) => <option key={style} value={style}>{style}</option>)}</SelectField>
-            </div>
-            <InputField label="Setter" name="setter" placeholder="Optional" />
-            <p className="text-sm leading-5 text-ink-muted"><span className="font-semibold text-ink">Coming soon:</span> your felt grade, route photos, and beta videos will live with this route once the backend supports them.</p>
-            <SubmitButton type="submit" pendingLabel="Adding route" className={buttonStyles()}>Add route</SubmitButton>
-          </form>
+          <RouteForm action={addRouteAction} gymId={gym.id} sessionId={sessionId} />
         </details>
       ) : null}
 

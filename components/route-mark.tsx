@@ -13,6 +13,11 @@ const COLOUR_CLASS: Record<string, string> = {
   pink: "route-mark--pink",
   black: "route-mark--black",
   white: "route-mark--white",
+  teal: "route-mark--teal",
+  mint: "route-mark--mint",
+  grey: "route-mark--grey",
+  brown: "route-mark--brown",
+  transparent: "route-mark--transparent",
 };
 
 export function RouteMark({ colour, grade }: RouteMarkProps) {

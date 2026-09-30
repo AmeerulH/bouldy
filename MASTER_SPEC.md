@@ -170,10 +170,12 @@ The backend derives session ownership from the JWT. The client must never rely o
 - Active routes belonging to the session's gym; retired routes remain visible only in historic context.
 - Route metadata: gym grade, colour, wall, setter, and style tags when supplied.
 - Route styles can include technical styles and wall angles, such as `Slab`, `Vertical`, `Overhang`, `Roof`, `Crimps`, `Slopers`, `Dyno`, `Static`, and `Balance`.
-- Attempt counter with clear increment/decrement or explicit count update.
-- Result control: project, zone, send, flash.
+- `Log attempt` increments the count and keeps a route in progress. `Sent` completes an already logged route without incrementing its count. `⚡ Flash` records a first-try completion. Correction permits an explicit count and result change.
+- Zone is only shown for routes the backend identifies as competition routes. Historical zone results remain readable and correctable. The current API has no competition-route field, so the route form labels this classification as coming soon and the Zone action is absent for ordinary routes.
 - A flash displays `⚡ Flash` and should have exactly one recorded attempt.
 - Notes per attempt.
+
+**Route entry/edit:** Grade and hold colour lead; the colour chooser shows the matching local hold asset and a live grade preview. Main style and any number of additional styles are sent in the API's `styles[]` list. Route name sits below grade, colour, wall, and styles, immediately above setter. Existing active routes can be edited from `/gyms/[id]`. The palette currently includes red, blue, green, yellow, orange, purple, pink, teal, mint, black, white, grey, brown, and transparent holds.
 
 **Future fields:** user-perceived grade, photos, and beta videos. These remain visibly planned but must not look actionable until a backend contract exists.
 
@@ -299,7 +301,7 @@ sequenceDiagram
 - Cards are purposeful information groups, not generic containers. Corners stay compact (12–16px) and button loading is local to the pressed button.
 - Motion is purposeful: 150–250ms for pressed states, list updates, and state transitions. No choreographed page-load sequence.
 - Shared visual behavior belongs in `components/ui/`. Page files retain data fetching, authorization, aggregation, and form composition; they must not duplicate button, field, feedback-message, or section-heading contracts.
-- Storybook 10 uses the official `@storybook/nextjs-vite` framework with Docs and Accessibility addons. Run `npm run storybook` for the local library or `npm run build-storybook` for the static build. Current stories cover BrandWordmark, AuthHeading, RouteHold, RouteMark, buttons, submit buttons, fields, feedback messages, section headings, loaders, all page skeletons, and bottom navigation. Extract SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState before adding their stories.
+- Storybook 10 uses the official `@storybook/nextjs-vite` framework with Docs and Accessibility addons. Run `npm run storybook` for the local library or `npm run build-storybook` for the static build. Current stories cover BrandWordmark, AuthHeading, RouteHold, RouteMark, RouteForm add/edit states, buttons, submit buttons, fields, feedback messages, section headings, loaders, all page skeletons, and bottom navigation. Extract SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState before adding their stories.
 
 ## 7. Backend architecture and API contract
 
@@ -333,6 +335,8 @@ sequenceDiagram
 2. Agree whether perceived grade belongs on `Attempt` (recommended) or a separate session-route log; add it end-to-end with migration, schema, validation, and API documentation.
 3. Select storage, ownership, moderation, file-size, and deletion rules before accepting route photos or beta videos.
 4. Document all new OpenAPI contracts and update `lib/api.ts` in the frontend at the same time.
+5. Add `Route.is_competition: boolean` to create, update, and response schemas (plus the database model and migration). Only then enable the competition-route control in `RouteForm`; Zone appears only when the saved route carries this flag. Keep existing `zone` attempts readable during rollout.
+6. If the primary style must survive a backend reorder of `styles[]`, add a dedicated `primary_style` field. Until then the first returned style is used as the editor's main style.
 
 ## 8. Acceptance criteria for the current product slice
 
@@ -382,6 +386,7 @@ A signed-in user can:
 | 2026-09-13 | Rebuilt the Sessions tab as the expressive session board: real latest-session stats, colour-matched local SVG hold assets, route-state cards, a live Log route action, and a compact complete journal beneath. |
 | 2026-09-13 | Replaced flat route markers with individually exported, detailed SVG hold assets across the full route-colour vocabulary; blue routes also support the triangle/arete hold variant. |
 | 2026-09-17 | Replaced the floating rounded desktop shell with a full-height square-edged mobile canvas and added immediate navigation overlays, route loading fallbacks, and button-level retry feedback for slow API paths. |
+| 2026-09-30 | Separated try counting from sending; moved grade and hold colour ahead of route name; added live colour preview, expanded hold palette, multi-style route entry, and a gym route editor. Zone now waits for a persisted competition-route flag. |
 | 2026-09-17 | Added three animated bouldering-hold loaders, six page-specific skeletons, destination-aware navigation feedback, slow-request messaging, reduced-motion support and a local loading-design preview. |
 | 2026-09-19 | Established “The Climber’s Logbook” as the canonical design system in `DESIGN.md` and `.impeccable/design.json`; extracted shared button, field, feedback, and section-heading primitives as the foundation for future Storybook coverage. |
 | 2026-09-19 | Installed Storybook 10 with the Next.js Vite framework, Docs and Accessibility addons; added initial stories for Bouldy’s reusable primitives, brand, climbing assets, navigation, loaders, and page skeletons. |

@@ -32,6 +32,8 @@ export type Route = {
   retired_date: string | null;
   status: RouteStatus;
   styles: string[];
+  /** Planned backend field; absent until competition classification is supported. */
+  is_competition?: boolean;
 };
 
 export type Session = {
@@ -181,6 +183,17 @@ export async function createRoute(input: {
   return apiFetch("/routes/", { method: "POST", json: input });
 }
 
+export async function getRoute(id: number): Promise<Route> {
+  return apiFetch(`/routes/${id}`);
+}
+
+export async function updateRoute(
+  id: number,
+  input: Partial<Pick<Route, "route_name" | "grade" | "colour" | "wall" | "setter" | "styles">>,
+): Promise<Route> {
+  return apiFetch(`/routes/${id}`, { method: "PUT", json: input });
+}
+
 export async function listSessions(token: string): Promise<Session[]> {
   return apiFetch("/sessions/", { token });
 }
@@ -217,6 +230,10 @@ export async function getSessionAttempts(
   sessionId: number,
 ): Promise<Attempt[]> {
   return apiFetch(`/sessions/${sessionId}/attempts`, { token });
+}
+
+export async function getAttempt(token: string, id: number): Promise<Attempt> {
+  return apiFetch(`/attempts/${id}`, { token });
 }
 
 export async function createAttempt(
