@@ -3,7 +3,8 @@
 import { useEffect, useRef, type ReactNode, type TouchEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-const TABS = ["/", "/explore", "/sessions", "/gyms", "/profile"];
+// Primary tabs in swipe order; Climbs sits beside Sessions, matching its segmented switch.
+const TABS = ["/", "/explore", "/sessions", "/climbs", "/gyms", "/profile"];
 
 function depth(path: string) {
   return Math.max(1, path.split("/").filter(Boolean).length);

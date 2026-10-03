@@ -198,7 +198,11 @@ All reusable visual components belong under `components/`; foundational primitiv
 
 - **Bottom navigation:** Five equal tabs (Home, Explore, Sessions, Gyms, You) with 20px line icons, 11px labels, and a short Send Red active indicator. It respects the bottom safe area and is hidden on full-screen route-form pages, where a sticky Save bar owns the bottom edge.
 - **Screen header:** Pushed screens (gym, session, route history, forms, planned pages) use a sticky 56px top bar with a back chevron and the parent name; it links to an explicit parent.
-- **Bottom sheet:** Short tasks (add gym, correct a log, private note, end session) use a native-dialog sheet capped at the 430px canvas: 16px top corners, a drag handle, a 44px close button, a 260ms ease-out slide, and a 50% Wall Black backdrop. Long forms are pages, not sheets.
+- **Bottom sheet:** Short tasks (add gym, a session route's actions, private note, end session, route filters) use a native-dialog sheet capped at the 430px canvas: 16px top corners, a drag handle, a 44px close button, a 260ms ease-out slide, and a 50% Wall Black backdrop. Long forms are pages, not sheets.
+- **Route browser:** Long route lists use a sticky toolbar (44px pill search plus a Filter pill that turns Panel Black with a Send Red count when filters are on), a horizontal 44px grade-chip rail with counts, and grade groups headed by the condensed grade at 24px with a muted count line. Rows are compact (about 64px): 40px hold, condensed grade, muted colour, name, one muted status line, hairline dividers, no cards. The session `+1` is a 44px neutral pill; completed routes show their result badge instead.
+- **Journal switch:** `Sessions | Climbs` is a full-width two-segment pill; the active segment is Panel Black. Month headers in the journal are sticky condensed labels over a 1px ink rule.
+- **Snackbar:** Passing success confirmations only. A Panel Black bar, 12px radius, 52px minimum height, green check, 14px semibold text and a 44px close affordance; the whole bar is the tap target. It floats at the top of the 430px canvas (below the safe area, above sticky headers), slides down 16px over 260ms with ease-out-quart, exits in 180ms, and never takes space in the page flow. Auto-dismisses after 5 seconds. Reduced motion removes the movement.
+- **Inline message:** `FeedbackMessage` is for errors and warnings that need action: an accent-tint block in the page flow beside what failed. Successes never use it.
 - **Page transition:** 220ms directional movement between primary tabs; pushed screens slide in from the right (260ms) and back out. Swipes require a deliberate horizontal gesture and never start from controls or screen edges.
 - **Unknown routes:** The branded 404 returns through `/`, which resolves to the journal for authenticated users and Welcome for unauthenticated users.
 
@@ -217,8 +221,8 @@ All reusable visual components belong under `components/`; foundational primitiv
 
 ### Storybook Component Taxonomy
 
-- **Ready now:** BrandWordmark, RouteHold, RouteMark, button variants, SubmitButton states, InputField, SelectField, FeedbackMessage, SectionHeading, BouldyLoader, PageLoader, PageSkeleton, BottomNav, ScreenHeader, BottomSheet, UnderConstruction.
-- **Extract next:** SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState.
+- **Ready now:** BrandWordmark, RouteHold, RouteMark, button variants, SubmitButton states, InputField, SelectField, FeedbackMessage, SectionHeading, Snackbar, BouldyLoader, PageLoader, PageSkeleton, BottomNav, ScreenHeader, BottomSheet, UnderConstruction, RouteBrowser (gym, live session, grade selected, Climbs by gym, no matches), JournalSwitch and MonthGroups.
+- **Extract next:** SessionSummary, SessionListItem, ResultBadge, EmptyState, and ErrorState.
 - **RouteForm:** Reused in the session and gym route editor. Storybook covers add and edit states; grade and hold colour lead, with style expansion and supporting metadata following.
 - **Keep page-level:** Data fetching, authorization redirects, server actions, route aggregation, and complete page compositions.
 

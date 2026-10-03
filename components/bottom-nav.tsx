@@ -66,7 +66,7 @@ export function BottomNav() {
       className="flex items-stretch justify-around border-t border-hairline bg-bg pb-[max(8px,env(safe-area-inset-bottom))] pt-2"
     >
       {TABS.map((tab) => {
-        const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+        const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href) || (tab.href === "/sessions" && pathname === "/climbs");
         return (
           <Link
             key={tab.href}

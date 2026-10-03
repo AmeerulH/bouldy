@@ -1,25 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  getGymRoutes,
-  getGyms,
-  getRoutes,
-  type Attempt,
-  type AttemptResult,
-  type Route,
-} from "@/lib/api";
-import { RouteHold } from "@/components/route-hold";
+import { getGymRoutes, getGyms, getRoutes, type Route } from "@/lib/api";
 import { getSessionToken } from "@/lib/session";
-
+import { JournalSwitch } from "@/components/journal-switch";
+import { MonthGroups, type MonthGroup } from "@/components/month-groups";
+import { buttonStyles } from "@/components/ui/button";
 import { loadJournal } from "@/lib/journal";
-import { duplicateRouteIds, summarizeJournal } from "@/lib/journal-summary";
-
-const RESULT_META: Record<AttemptResult, { label: string; className: string }> = {
-  flash: { label: "⚡ Flash", className: "bg-[oklch(0.92_0.07_145)] text-[oklch(0.35_0.14_145)]" },
-  send: { label: "Send", className: "bg-[oklch(0.92_0.05_255)] text-[oklch(0.39_0.15_255)]" },
-  zone: { label: "Zone", className: "bg-[oklch(0.94_0.06_85)] text-[oklch(0.42_0.13_85)]" },
-  project: { label: "In progress", className: "bg-accent-tint text-accent-tint-ink" },
-};
+import { duplicateRouteIds, summarizeJournal, type JournalRecord } from "@/lib/journal-summary";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-MY", { weekday: "short", day: "numeric", month: "short" }).format(
@@ -37,6 +24,15 @@ function OutcomeStat({ count, label, colour }: { count: number | null; label: st
       <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-[0.08em] text-panel-ink-muted">{label}</p>
     </div>
   );
+}
+
+function sendCounts(record: JournalRecord) {
+  const reliable = record.loaded && !duplicateRouteIds(record.attempts).size;
+  return {
+    reliable,
+    sends: record.attempts.filter((attempt) => attempt.result === "send" || attempt.result === "flash").length,
+    flashes: record.attempts.filter((attempt) => attempt.result === "flash").length,
+  };
 }
 
 export default async function SessionsPage() {
@@ -61,11 +57,9 @@ export default async function SessionsPage() {
       }
     }
   }
-  const attemptsByRoute = new Map<number, Attempt>();
-  for (const attempt of featured?.attempts ?? []) attemptsByRoute.set(attempt.route_id, attempt);
-  const featuredRoutes = [...routeById.values()].filter(
-    (route) => route.status === "active" || attemptsByRoute.has(route.id),
-  );
+  const loggedIds = new Set((featured?.attempts ?? []).map((attempt) => attempt.route_id));
+  const routesLoaded = routeResults.some((result) => result.status === "fulfilled");
+  const notLogged = [...routeById.values()].filter((route) => route.status === "active" && !loggedIds.has(route.id)).length;
   const featuredReliable = featured?.loaded && !duplicateRouteIds(featured.attempts).size;
   const live = featured?.session.duration_minutes === 0;
   const flashes = (featured?.attempts ?? []).filter((attempt) => attempt.result === "flash").length;
@@ -73,11 +67,48 @@ export default async function SessionsPage() {
   const inProgress = (featured?.attempts ?? []).filter(
     (attempt) => attempt.result === "project" || attempt.result === "zone",
   ).length;
-  const notLogged = featuredRoutes.filter((route) => !attemptsByRoute.has(route.id)).length;
+
+  const byMonth = new Map<string, JournalRecord[]>();
+  for (const record of records) {
+    const key = record.session.session_date.slice(0, 7);
+    byMonth.set(key, [...(byMonth.get(key) ?? []), record]);
+  }
+  const months: MonthGroup[] = [...byMonth].map(([key, monthRecords]) => {
+    const counts = monthRecords.map(sendCounts);
+    const monthSends = counts.every((count) => count.reliable) ? counts.reduce((total, count) => total + count.sends, 0) : null;
+    return {
+      key,
+      label: new Intl.DateTimeFormat("en-MY", { month: "long", year: "numeric" }).format(new Date(`${key}-15T12:00:00`)),
+      meta: `${monthRecords.length} ${monthRecords.length === 1 ? "session" : "sessions"}${monthSends === null ? "" : ` · ${monthSends} sends`}`,
+      content: (
+        <div className="divide-y divide-hairline">
+          {monthRecords.map((record) => {
+            const { session, attempts } = record;
+            const gym = gymById.get(session.gym_id);
+            const count = sendCounts(record);
+            const active = session.duration_minutes === 0;
+            return (
+              <Link key={session.id} href={`/sessions/${session.id}`} className="button-feedback flex min-h-20 items-center gap-4 py-3">
+                <time dateTime={session.session_date} className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-panel px-1 text-center font-display text-base font-bold uppercase leading-none text-panel-ink">{formatDate(session.session_date).replace(",", "")}</time>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-display text-xl font-bold uppercase leading-none text-ink">{gym?.name ?? "Unknown gym"}</p>
+                  <p className="mt-2 text-sm text-ink-muted">{active ? "In progress" : `${session.duration_minutes} min`}{attempts.length > 0 ? ` · ${attempts.length} routes` : ""}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-sm font-bold text-ink">{count.reliable ? `${count.sends} sends` : "Unavailable"}</p>
+                  <p className="mt-1 text-xs font-semibold text-accent">{count.reliable && count.flashes > 0 ? `⚡ ${count.flashes} flash${count.flashes === 1 ? "" : "es"}` : ""}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      ),
+    };
+  });
 
   return (
     <main id="main-content" className="flex flex-col gap-6 px-5 pb-8 pt-6">
-      <header>
+      <header className="flex flex-col gap-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-ink-muted">Every attempt has a place.</p>
@@ -88,10 +119,7 @@ export default async function SessionsPage() {
             <p className="text-right text-[9px] font-bold uppercase leading-[1.1] tracking-[0.16em] text-ink-faint">Climb<br />Log<br />Improve</p>
           </div>
         </div>
-        <div className="mt-6 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.12em] text-ink-muted">
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-[2.2]"><rect x="3.5" y="5.5" width="17" height="15" rx="2" /><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17" /></svg>
-          <span>{featured ? new Intl.DateTimeFormat("en-MY", { month: "long", year: "numeric" }).format(new Date(`${featured.session.session_date}T12:00:00`)) : "Your journal"}</span>
-        </div>
+        <JournalSwitch active="sessions" />
       </header>
 
       {hasLoadError ? <p role="alert" className="rounded-xl bg-accent-tint px-4 py-3 text-sm font-medium text-accent-tint-ink">We couldn&apos;t load all of your journal just now. Reload to try again.</p> : null}
@@ -104,69 +132,43 @@ export default async function SessionsPage() {
         </section>
       ) : (
         <>
-          <section className="overflow-hidden rounded-2xl bg-panel p-4 text-panel-ink" aria-label="Latest session">
-            <div className="grid grid-cols-[1fr_auto] gap-x-4">
-              <div className="min-w-0">
-                <p className="font-display text-3xl font-extrabold uppercase leading-none tracking-[-0.02em]">{formatDate(featured.session.session_date).replace(",", "")}</p>
-                <p className="mt-1.5 truncate text-sm font-bold uppercase tracking-[0.1em] text-panel-ink-muted">{featuredGym?.name ?? "Unknown gym"}</p>
+          <section className="flex flex-col gap-3" aria-label="Latest session">
+            <Link href={`/sessions/${featured.session.id}`} className="button-feedback overflow-hidden rounded-2xl bg-panel p-4 text-panel-ink">
+              <div className="grid grid-cols-[1fr_auto] gap-x-4">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-panel-ink-muted">{live ? "Climbing now" : "Latest session"}</p>
+                  <p className="mt-1.5 font-display text-3xl font-extrabold uppercase leading-none tracking-[-0.02em]">{formatDate(featured.session.session_date).replace(",", "")}</p>
+                  <p className="mt-1.5 truncate text-sm font-bold uppercase tracking-[0.1em] text-panel-ink-muted">{featuredGym?.name ?? "Unknown gym"}</p>
+                </div>
+                <div className="border-l border-panel-track pl-4 text-right">
+                  <p className="font-display text-3xl font-extrabold uppercase leading-none">{live ? "Live" : `${featured.session.duration_minutes} min`}</p>
+                  <p className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-panel-ink-muted">{featuredReliable ? `${featured.attempts.length} routes · ${sends + flashes} sends` : "Summary unavailable"}</p>
+                </div>
               </div>
-              <div className="border-l border-panel-track pl-4 text-right">
-                <p className="font-display text-3xl font-extrabold uppercase leading-none">{live ? "Live" : `${featured.session.duration_minutes} min`}</p>
-                <p className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-panel-ink-muted">{featuredReliable ? `${featured.attempts.length} routes · ${sends + flashes} sends` : "Summary unavailable"}</p>
+              <div className="mt-5 grid grid-cols-4 gap-2 rounded-xl bg-[oklch(0.17_0.003_0)] px-3 py-3">
+                <OutcomeStat count={featuredReliable ? flashes : null} label="Flash" colour="bg-[oklch(0.58_0.17_145)]" />
+                <OutcomeStat count={featuredReliable ? sends : null} label="Send" colour="bg-[oklch(0.56_0.16_250)]" />
+                <OutcomeStat count={featuredReliable ? inProgress : null} label="In progress" colour="bg-accent" />
+                <OutcomeStat count={featuredReliable && routesLoaded ? notLogged : null} label="Not tried" colour="bg-[oklch(0.6_0.003_0)]" />
               </div>
-            </div>
-            <div className="mt-5 grid grid-cols-4 gap-2 rounded-xl bg-[oklch(0.17_0.003_0)] px-3 py-3">
-              <OutcomeStat count={featuredReliable ? flashes : null} label="Flash" colour="bg-[oklch(0.58_0.17_145)]" />
-              <OutcomeStat count={featuredReliable ? sends : null} label="Send" colour="bg-[oklch(0.56_0.16_250)]" />
-              <OutcomeStat count={featuredReliable ? inProgress : null} label="In progress" colour="bg-accent" />
-              <OutcomeStat count={featuredReliable ? notLogged : null} label="Not logged" colour="bg-[oklch(0.6_0.003_0)]" />
-            </div>
-          </section>
-
-          <section aria-labelledby="latest-routes">
-            <div className="flex items-end justify-between gap-3">
-              <h2 id="latest-routes" className="font-display text-2xl font-extrabold uppercase leading-none tracking-[-0.02em] text-ink">Route log</h2>
-              <Link href={`/sessions/${featured.session.id}`} className="text-sm font-semibold text-accent underline underline-offset-4">Open session</Link>
-            </div>
-            {featuredRoutes.length === 0 ? (
-              <p className="mt-4 text-sm leading-6 text-ink-muted">No routes have been added to this gym yet. Add the first route from this session.</p>
+            </Link>
+            {live ? (
+              <Link href={`/sessions/${featured.session.id}`} className="button-feedback flex min-h-14 items-center justify-center gap-3 rounded-xl bg-accent px-5 text-base font-bold uppercase tracking-[0.08em] text-accent-ink"><span aria-hidden="true" className="text-3xl font-light leading-none">+</span>Log route</Link>
             ) : (
-              <div className="mt-4 flex flex-col gap-3">
-                {featuredRoutes.map((route) => {
-                  const attempt = attemptsByRoute.get(route.id);
-                  return (
-                    <Link key={route.id} href={`/sessions/${featured.session.id}`} className="button-feedback grid grid-cols-[62px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-hairline bg-bg py-3 pl-3 pr-5">
-                      <RouteHold colour={route.colour} routeName={route.route_name} className="h-[58px] w-[58px]" />
-                      <div className="min-w-0">
-                        <p className="font-display text-3xl font-extrabold leading-none text-ink">{route.grade}</p>
-                        <p className="mt-1 text-xs font-semibold text-ink-muted">{route.colour || "Colour not recorded"}{route.wall ? ` · ${route.wall}` : ""}</p>
-                        {route.styles.length > 0 ? <div className="mt-2 flex flex-wrap gap-1">{route.styles.slice(0, 2).map((style) => <span key={style} className="rounded-full bg-[oklch(0.93_0.002_0)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-muted">{style}</span>)}</div> : null}
-                        <h3 className="mt-2 truncate text-sm font-semibold text-ink">{route.route_name}</h3>
-                        {route.setter ? <p className="mt-1 truncate text-xs text-ink-muted">Set by {route.setter}</p> : null}
-                      </div>
-                      <div className="min-w-[70px] text-right">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-muted">Attempts</p>
-                        <p className="mt-0.5 font-display text-2xl font-bold leading-none text-ink">{featuredReliable ? attempt?.num_attempts ?? "—" : "—"}</p>
-                        <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] ${attempt ? RESULT_META[attempt.result].className : "bg-[oklch(0.92_0.002_0)] text-ink-muted"}`}>{!featuredReliable ? "Unavailable" : attempt ? RESULT_META[attempt.result].label : "Not logged"}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
+              <div className="grid grid-cols-2 gap-2">
+                <Link href={`/sessions/${featured.session.id}`} className={buttonStyles({ variant: "dark" })}>Review session</Link>
+                <Link href="/gyms" className={buttonStyles()}>Start a session</Link>
               </div>
             )}
-            <Link href={live ? `/sessions/${featured.session.id}#add-route` : "/gyms"} className="button-feedback mt-5 flex min-h-14 items-center justify-center gap-3 rounded-xl bg-accent px-5 text-base font-bold uppercase tracking-[0.08em] text-accent-ink"><span aria-hidden="true" className="text-3xl font-light leading-none">+</span>{live ? "Log route" : "Start a session"}</Link>
           </section>
 
-          <section aria-labelledby="all-sessions" className="pt-2">
-            <div className="flex items-baseline justify-between gap-3"><h2 id="all-sessions" className="font-display text-2xl font-extrabold uppercase leading-none tracking-[-0.02em] text-ink">All sessions</h2><p className="text-xs font-semibold text-ink-muted">{records.length} total</p></div>
-            <div className="mt-4 divide-y divide-hairline border-y border-hairline">
-              {records.map(({ session, attempts, loaded }) => {
-                const gym = gymById.get(session.gym_id);
-                const sessionSends = attempts.filter((attempt) => attempt.result === "send" || attempt.result === "flash").length;
-                const sessionFlashes = attempts.filter((attempt) => attempt.result === "flash").length;
-                const active = session.duration_minutes === 0;
-                return <Link key={session.id} href={`/sessions/${session.id}`} className="button-feedback group flex min-h-24 items-center gap-4 py-4"><time dateTime={session.session_date} className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-panel px-1 text-center font-display text-base font-bold uppercase leading-none text-panel-ink">{formatDate(session.session_date).replace(",", "")}</time><div className="min-w-0 flex-1"><p className="truncate font-display text-xl font-bold uppercase leading-none text-ink">{gym?.name ?? "Unknown gym"}</p><p className="mt-2 text-sm text-ink-muted">{active ? "In progress" : `${session.duration_minutes} min`}{attempts.length > 0 ? ` · ${attempts.length} routes` : ""}</p></div><div className="shrink-0 text-right"><p className="text-sm font-bold text-ink">{loaded && !duplicateRouteIds(attempts).size ? `${sessionSends} sends` : "Unavailable"}</p><p className="mt-1 text-xs font-semibold text-accent">{loaded && !duplicateRouteIds(attempts).size && sessionFlashes > 0 ? `⚡ ${sessionFlashes} flash${sessionFlashes === 1 ? "" : "es"}` : ""}</p></div></Link>;
-              })}
+          <section aria-labelledby="all-sessions">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 id="all-sessions" className="font-display text-2xl font-extrabold uppercase leading-none tracking-[-0.02em] text-ink">All sessions</h2>
+              <p className="text-xs font-semibold text-ink-muted">{records.length} total</p>
+            </div>
+            <div className="mt-1">
+              <MonthGroups months={months} />
             </div>
           </section>
         </>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/signup", "/welcome"];
-const PROTECTED_PATHS = ["/sessions", "/history", "/gyms", "/explore", "/profile", "/routes"];
+const PROTECTED_PATHS = ["/sessions", "/climbs", "/history", "/gyms", "/explore", "/profile", "/routes"];
 
 function isProtectedPath(pathname: string) {
   return pathname === "/" || PROTECTED_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

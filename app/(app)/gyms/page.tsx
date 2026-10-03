@@ -9,11 +9,11 @@ import { InputField } from "@/components/ui/form-field";
 import { SectionHeading } from "@/components/ui/section-heading";
 
 type GymsPageProps = {
-  searchParams: Promise<{ error?: string; notice?: string; sheet?: string }>;
+  searchParams: Promise<{ error?: string; sheet?: string }>;
 };
 
 export default async function GymsPage({ searchParams }: GymsPageProps) {
-  const [{ error, notice, sheet }, gyms] = await Promise.all([searchParams, getGyms()]);
+  const [{ error, sheet }, gyms] = await Promise.all([searchParams, getGyms()]);
   const sheetError = sheet === "add-gym" ? error : undefined;
   const pageError = sheetError ? undefined : error;
   const addButton = buttonStyles({ variant: "soft", size: "sm", className: "shrink-0 gap-1.5 rounded-full" });
@@ -33,7 +33,6 @@ export default async function GymsPage({ searchParams }: GymsPageProps) {
       </header>
 
       {pageError ? <FeedbackMessage>{pageError}</FeedbackMessage> : null}
-      {notice ? <FeedbackMessage tone="success">{notice}</FeedbackMessage> : null}
 
       <section aria-labelledby="gym-list">
         <SectionHeading id="gym-list" aside={`${gyms.length} total`}>All gyms</SectionHeading>

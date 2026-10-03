@@ -258,11 +258,11 @@ export async function logAttemptAction(formData: FormData) {
   } catch (err) {
     const message =
       err instanceof ApiError ? err.message : "We couldn't save that attempt. Try again.";
-    redirect(`/sessions/${sessionId}?route=${routeId}&error=${encodeURIComponent(message)}#route-${routeId}`);
+    redirect(`/sessions/${sessionId}?route=${routeId}&sheet=route-${routeId}&error=${encodeURIComponent(message)}`, RedirectType.replace);
   }
 
   revalidatePath("/", "layout");
-  redirect(`/sessions/${sessionId}#route-${routeId}`);
+  redirect(`/sessions/${sessionId}#route-${routeId}`, RedirectType.replace);
 }
 
 export async function correctAttemptAction(formData: FormData) {
@@ -284,14 +284,14 @@ export async function correctAttemptAction(formData: FormData) {
     !validResults.includes(result)
   ) {
     redirect(
-      `/sessions/${sessionId}?route=${routeId}&sheet=correct-${routeId}&error=${encodeURIComponent("Choose a valid result and at least one attempt.")}`,
+      `/sessions/${sessionId}?route=${routeId}&sheet=route-${routeId}&error=${encodeURIComponent("Choose a valid result and at least one attempt.")}`,
       RedirectType.replace,
     );
   }
 
   if (result === "flash" && numAttempts !== 1) {
     redirect(
-      `/sessions/${sessionId}?route=${routeId}&sheet=correct-${routeId}&error=${encodeURIComponent("A flash must have exactly one attempt.")}`,
+      `/sessions/${sessionId}?route=${routeId}&sheet=route-${routeId}&error=${encodeURIComponent("A flash must have exactly one attempt.")}`,
       RedirectType.replace,
     );
   }
@@ -319,7 +319,7 @@ export async function correctAttemptAction(formData: FormData) {
   } catch (err) {
     const message =
       err instanceof ApiError ? err.message : "We couldn't save that correction. Try again.";
-    redirect(`/sessions/${sessionId}?route=${routeId}&sheet=correct-${routeId}&error=${encodeURIComponent(message)}`, RedirectType.replace);
+    redirect(`/sessions/${sessionId}?route=${routeId}&sheet=route-${routeId}&error=${encodeURIComponent(message)}`, RedirectType.replace);
   }
 
   redirect(`/sessions/${sessionId}?notice=${encodeURIComponent("Route log corrected.")}`, RedirectType.replace);
