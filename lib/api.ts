@@ -1,4 +1,6 @@
-export const API_BASE = "https://bouldy-api.onrender.com";
+// Development-only loopback override for isolated integration checks.
+const localApi = process.env.NODE_ENV === "development" ? process.env.BOULDY_LOCAL_API : undefined;
+export const API_BASE = localApi && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(localApi) ? localApi : "https://bouldy-api.onrender.com";
 
 export type UserResponse = {
   id: number;

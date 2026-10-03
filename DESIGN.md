@@ -196,8 +196,10 @@ All reusable visual components belong under `components/`; foundational primitiv
 
 ### Navigation
 
-- **Bottom navigation:** Three equal tabs—Home, Sessions, Gyms—with 20px line icons, 11px labels, and a short Send Red active indicator. It respects the bottom safe area.
-- **Page transition:** 220ms directional movement between primary tabs. Swipes require a deliberate horizontal gesture and never start from controls or screen edges.
+- **Bottom navigation:** Five equal tabs (Home, Explore, Sessions, Gyms, You) with 20px line icons, 11px labels, and a short Send Red active indicator. It respects the bottom safe area and is hidden on full-screen route-form pages, where a sticky Save bar owns the bottom edge.
+- **Screen header:** Pushed screens (gym, session, route history, forms, planned pages) use a sticky 56px top bar with a back chevron and the parent name; it links to an explicit parent.
+- **Bottom sheet:** Short tasks (add gym, correct a log, private note, end session) use a native-dialog sheet capped at the 430px canvas: 16px top corners, a drag handle, a 44px close button, a 260ms ease-out slide, and a 50% Wall Black backdrop. Long forms are pages, not sheets.
+- **Page transition:** 220ms directional movement between primary tabs; pushed screens slide in from the right (260ms) and back out. Swipes require a deliberate horizontal gesture and never start from controls or screen edges.
 - **Unknown routes:** The branded 404 returns through `/`, which resolves to the journal for authenticated users and Welcome for unauthenticated users.
 
 ### Feedback and Loading
@@ -215,7 +217,7 @@ All reusable visual components belong under `components/`; foundational primitiv
 
 ### Storybook Component Taxonomy
 
-- **Ready now:** BrandWordmark, RouteHold, RouteMark, button variants, SubmitButton states, InputField, SelectField, FeedbackMessage, SectionHeading, BouldyLoader, PageLoader, PageSkeleton, BottomNav.
+- **Ready now:** BrandWordmark, RouteHold, RouteMark, button variants, SubmitButton states, InputField, SelectField, FeedbackMessage, SectionHeading, BouldyLoader, PageLoader, PageSkeleton, BottomNav, ScreenHeader, BottomSheet, UnderConstruction.
 - **Extract next:** SessionSummary, SessionListItem, RouteCard, ResultBadge, ExpandableFormSection, EmptyState, and ErrorState.
 - **RouteForm:** Reused in the session and gym route editor. Storybook covers add and edit states; grade and hold colour lead, with style expansion and supporting metadata following.
 - **Keep page-level:** Data fetching, authorization redirects, server actions, route aggregation, and complete page compositions.

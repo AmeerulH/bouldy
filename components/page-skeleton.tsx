@@ -1,13 +1,15 @@
 import { BouldyLoader } from "@/components/bouldy-loader";
 import { LoadingPatience } from "@/components/page-loader";
 
-export type SkeletonPage = "home" | "sessions" | "session" | "gyms" | "login" | "signup";
+export type SkeletonPage = "home" | "sessions" | "session" | "gyms" | "form" | "placeholder" | "login" | "signup";
 
 export function skeletonPageForPath(path: string): SkeletonPage | undefined {
   if (path === "/") return "home";
   if (path === "/sessions" || path === "/history") return "sessions";
   if (/^\/sessions\/[^/]+\/?$/.test(path)) return "session";
   if (path === "/gyms") return "gyms";
+  if (/\/routes\/new$|\/routes\/[^/]+\/edit$/.test(path)) return "form";
+  if (path === "/explore" || path.startsWith("/explore/") || /^\/profile\/.+/.test(path) || /^\/routes\/[^/]+\/beta$/.test(path)) return "placeholder";
   if (path === "/login" || path === "/signup") return path.slice(1) as "login" | "signup";
 }
 
@@ -42,7 +44,7 @@ function RouteRows({ editable }: { editable: boolean }) {
 
 const labels: Record<SkeletonPage, string> = {
   home: "Loading your progress…", sessions: "Opening your journal…", session: "Getting your routes ready…",
-  gyms: "Finding your next wall…", login: "Preparing your login…", signup: "Getting you started…",
+  gyms: "Finding your next wall…", form: "Opening the route form…", placeholder: "Opening…", login: "Preparing your login…", signup: "Getting you started…",
 };
 
 /** Static page geometry streams immediately; only the small status motif moves. */
@@ -62,6 +64,18 @@ export function PageSkeleton({ page }: { page: SkeletonPage }) {
               <div key={i}><Bone className="mb-2 h-3 w-20" /><Bone className="h-12 w-full rounded-xl" /></div>
             ))}</div>
             <Bone className="h-13 rounded-full" /><Bone className="mx-auto h-4 w-3/4" />
+          </>
+        ) : page === "form" ? (
+          <>
+            <Bone className="h-24 rounded-2xl" />
+            <div><Bone className="mb-2 h-3 w-20" /><Bone className="h-12 w-full rounded-xl" /></div>
+            <div className="grid grid-cols-4 gap-2">{Array.from({ length: 8 }, (_, i) => <Bone key={i} className="h-20 rounded-xl" />)}</div>
+            <Bone className="h-12 w-full rounded-xl" />
+          </>
+        ) : page === "placeholder" ? (
+          <>
+            <Summary />
+            <div className="divide-y divide-hairline border-y border-hairline">{[0, 1, 2].map((i) => <div key={i} className="py-5"><Bone className="h-5 w-3/5" /><Bone className="mt-3 h-3 w-4/5" /></div>)}</div>
           </>
         ) : page === "gyms" ? (
           <>

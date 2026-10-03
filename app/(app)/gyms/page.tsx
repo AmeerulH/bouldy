@@ -3,51 +3,37 @@ import { addGymAction, startSessionAction } from "@/lib/actions";
 import { getGyms } from "@/lib/api";
 import { SubmitButton } from "@/components/submit-button";
 import { buttonStyles } from "@/components/ui/button";
+import { BottomSheet, SheetTrigger } from "@/components/ui/bottom-sheet";
 import { FeedbackMessage } from "@/components/ui/feedback-message";
 import { InputField } from "@/components/ui/form-field";
 import { SectionHeading } from "@/components/ui/section-heading";
 
 type GymsPageProps = {
-  searchParams: Promise<{ error?: string; notice?: string }>;
+  searchParams: Promise<{ error?: string; notice?: string; sheet?: string }>;
 };
 
 export default async function GymsPage({ searchParams }: GymsPageProps) {
-  const [{ error, notice }, gyms] = await Promise.all([searchParams, getGyms()]);
+  const [{ error, notice, sheet }, gyms] = await Promise.all([searchParams, getGyms()]);
+  const sheetError = sheet === "add-gym" ? error : undefined;
+  const pageError = sheetError ? undefined : error;
+  const addButton = buttonStyles({ variant: "soft", size: "sm", className: "shrink-0 gap-1.5 rounded-full" });
 
   return (
     <main id="main-content" className="flex flex-col gap-7 px-5 pb-8 pt-6">
-      <header>
-        <p className="text-sm text-ink-muted">Choose your wall.</p>
-        <h1 className="mt-1 font-display text-4xl font-extrabold uppercase leading-[0.9] tracking-[-0.03em] text-ink">
-          Gyms
-        </h1>
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-sm text-ink-muted">Choose your wall.</p>
+          <h1 className="mt-1 font-display text-4xl font-extrabold uppercase leading-[0.9] tracking-[-0.03em] text-ink">
+            Gyms
+          </h1>
+        </div>
+        <SheetTrigger id="add-gym" className={addButton}>
+          <span aria-hidden="true" className="text-lg leading-none">+</span> Add gym
+        </SheetTrigger>
       </header>
 
-      {error ? <FeedbackMessage>{error}</FeedbackMessage> : null}
+      {pageError ? <FeedbackMessage>{pageError}</FeedbackMessage> : null}
       {notice ? <FeedbackMessage tone="success">{notice}</FeedbackMessage> : null}
-
-      <details className="group border-y border-hairline py-4" open={gyms.length === 0}>
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-display text-xl font-bold uppercase text-ink marker:content-none">
-          Add a gym
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-accent text-lg leading-none text-accent-ink group-open:rotate-45">
-            +
-          </span>
-        </summary>
-        <form action={addGymAction} className="mt-5 flex flex-col gap-4">
-          <InputField label="Gym name" name="name" required placeholder="e.g. Bump Bouldering" />
-          <InputField label="Location" name="location" required placeholder="e.g. Petaling Jaya" />
-          <p className="text-sm leading-5 text-ink-muted">
-            <span className="font-semibold text-ink">Coming soon:</span> each gym will be able to label its grading system in its own words.
-          </p>
-          <SubmitButton
-            type="submit"
-            pendingLabel="Adding gym"
-            className={buttonStyles()}
-          >
-            Add gym
-          </SubmitButton>
-        </form>
-      </details>
 
       <section aria-labelledby="gym-list">
         <SectionHeading id="gym-list" aside={`${gyms.length} total`}>All gyms</SectionHeading>
@@ -76,6 +62,20 @@ export default async function GymsPage({ searchParams }: GymsPageProps) {
       <Link href="/sessions" className="text-center text-sm font-semibold text-ink-muted underline underline-offset-4">
         View your session journal
       </Link>
+
+      <BottomSheet id="add-gym" title="Add a gym">
+        <form action={addGymAction} className="flex flex-col gap-4">
+          {sheetError ? <FeedbackMessage>{sheetError}</FeedbackMessage> : null}
+          <InputField label="Gym name" name="name" required placeholder="e.g. Bump Bouldering" />
+          <InputField label="Location" name="location" required placeholder="e.g. Petaling Jaya" />
+          <p className="text-sm leading-5 text-ink-muted">
+            <span className="font-semibold text-ink">Coming soon:</span> each gym will be able to label its grading system in its own words.
+          </p>
+          <SubmitButton type="submit" pendingLabel="Adding gym" className={buttonStyles()}>
+            Add gym
+          </SubmitButton>
+        </form>
+      </BottomSheet>
     </main>
   );
 }

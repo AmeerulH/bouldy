@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 type FieldShellProps = {
@@ -31,6 +31,10 @@ export function InputField({ label, compact, className, ...props }: InputFieldPr
   );
 }
 
+export function TextareaField({ label, className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: ReactNode }) {
+  return <FieldShell label={label}><textarea className={cn(controlStyles, "resize-y py-3", className)} {...props} /></FieldShell>;
+}
+
 type SelectFieldProps = SelectHTMLAttributes<HTMLSelectElement> & {
   label: ReactNode;
   compact?: boolean;
@@ -40,9 +44,15 @@ type SelectFieldProps = SelectHTMLAttributes<HTMLSelectElement> & {
 export function SelectField({ label, compact, className, children, ...props }: SelectFieldProps) {
   return (
     <FieldShell label={label} compact={compact}>
-      <select className={cn(controlStyles, "bg-bg px-3", compact && "min-h-11 text-sm font-medium", className)} {...props}>
-        {children}
-      </select>
+      {/* Custom chevron so every dropdown has the same inset as the text on the left. */}
+      <span className="relative block">
+        <select className={cn(controlStyles, "appearance-none bg-bg pl-3.5 pr-10", compact && "min-h-11 pl-3 pr-9 text-sm font-medium", className)} {...props}>
+          {children}
+        </select>
+        <svg aria-hidden="true" viewBox="0 0 24 24" className={cn("pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 fill-none stroke-current text-ink-muted", compact ? "right-3" : "right-3.5")} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </span>
     </FieldShell>
   );
 }

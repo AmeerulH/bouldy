@@ -8,5 +8,5 @@ export default async function AppGroupLayout({ children }: { children: ReactNode
   const user = await getSessionUser();
   if (!user) redirect("/welcome");
 
-  return <AppShell bottomNav={<BottomNav />}>{children}</AppShell>;
+  return <AppShell bottomNav={<BottomNav />}>{process.env.NODE_ENV === "development" && process.env.BOULDY_LOCAL_API ? <p className="border-b border-hairline px-5 py-2 text-xs font-semibold text-ink-muted">Sample journal · local preview</p> : null}{children}</AppShell>;
 }

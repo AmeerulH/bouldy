@@ -22,7 +22,7 @@ export function RouteForm({ action, gymId, sessionId, route }: RouteFormProps) {
   const mainStyle = route?.styles[0] ?? "";
 
   return (
-    <form action={action} className="mt-5 flex flex-col gap-5">
+    <form action={action} className="flex flex-col gap-5">
       <input type="hidden" name="gym_id" value={gymId} />
       {sessionId ? <input type="hidden" name="session_id" value={sessionId} /> : null}
       {route ? <input type="hidden" name="route_id" value={route.id} /> : null}
@@ -91,9 +91,11 @@ export function RouteForm({ action, gymId, sessionId, route }: RouteFormProps) {
         <p className="mt-1 text-xs leading-5 text-ink-muted">Coming soon. Once the gym can mark a route as a comp route, Zone will appear in its session log.</p>
       </div>
 
-      <SubmitButton type="submit" pendingLabel={route ? "Saving route" : "Adding route"} className={buttonStyles()}>
-        {route ? "Save route" : "Add route"}
-      </SubmitButton>
+      <div className="sticky bottom-0 z-10 -mx-5 border-t border-hairline bg-bg px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+        <SubmitButton type="submit" pendingLabel={route ? "Saving route" : "Adding route"} className={buttonStyles({ className: "w-full" })}>
+          {route ? "Save route" : "Add route"}
+        </SubmitButton>
+      </div>
     </form>
   );
 }

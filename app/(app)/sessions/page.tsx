@@ -4,17 +4,15 @@ import {
   getGymRoutes,
   getGyms,
   getRoutes,
-  getSessionAttempts,
-  listSessions,
   type Attempt,
   type AttemptResult,
   type Route,
-  type Session,
 } from "@/lib/api";
 import { RouteHold } from "@/components/route-hold";
 import { getSessionToken } from "@/lib/session";
 
-type SessionWithAttempts = { session: Session; attempts: Attempt[] };
+import { loadJournal } from "@/lib/journal";
+import { duplicateRouteIds, summarizeJournal } from "@/lib/journal-summary";
 
 const RESULT_META: Record<AttemptResult, { label: string; className: string }> = {
   flash: { label: "⚡ Flash", className: "bg-[oklch(0.92_0.07_145)] text-[oklch(0.35_0.14_145)]" },
@@ -29,12 +27,12 @@ function formatDate(value: string) {
   );
 }
 
-function OutcomeStat({ count, label, colour }: { count: number; label: string; colour: string }) {
+function OutcomeStat({ count, label, colour }: { count: number | null; label: string; colour: string }) {
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
         <span aria-hidden="true" className={`h-3 w-3 shrink-0 rounded-full ${colour}`} />
-        <span className="font-display text-2xl font-bold leading-none text-panel-ink">{count}</span>
+        <span className="font-display text-2xl font-bold leading-none text-panel-ink">{count ?? "—"}</span>
       </div>
       <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-[0.08em] text-panel-ink-muted">{label}</p>
     </div>
@@ -45,21 +43,11 @@ export default async function SessionsPage() {
   const token = await getSessionToken();
   if (!token) redirect("/welcome");
 
-  const [sessionResult, gymResult] = await Promise.allSettled([listSessions(token), getGyms()]);
-  const sessions = sessionResult.status === "fulfilled" ? sessionResult.value : [];
-  const gyms = gymResult.status === "fulfilled" ? gymResult.value : [];
-  const hasLoadError = sessionResult.status === "rejected" || gymResult.status === "rejected";
+  const [journal, gymResult] = await Promise.all([loadJournal(token), getGyms().catch(() => null)]);
+  const gyms = gymResult ?? [];
+  const records = journal.records;
+  const hasLoadError = !summarizeJournal(journal).reliable || !gymResult;
   const gymById = new Map(gyms.map((gym) => [gym.id, gym]));
-  const records: SessionWithAttempts[] = await Promise.all(
-    [...sessions].sort((a, b) => b.session_date.localeCompare(a.session_date)).map(async (session) => {
-      try {
-        return { session, attempts: await getSessionAttempts(token, session.id) };
-      } catch {
-        return { session, attempts: [] };
-      }
-    }),
-  );
-
   const featured = records[0];
   const featuredGym = featured ? gymById.get(featured.session.gym_id) : undefined;
   const routeResults = featured
@@ -78,6 +66,7 @@ export default async function SessionsPage() {
   const featuredRoutes = [...routeById.values()].filter(
     (route) => route.status === "active" || attemptsByRoute.has(route.id),
   );
+  const featuredReliable = featured?.loaded && !duplicateRouteIds(featured.attempts).size;
   const live = featured?.session.duration_minutes === 0;
   const flashes = (featured?.attempts ?? []).filter((attempt) => attempt.result === "flash").length;
   const sends = (featured?.attempts ?? []).filter((attempt) => attempt.result === "send").length;
@@ -109,7 +98,7 @@ export default async function SessionsPage() {
 
       {!featured ? (
         <section className="rounded-2xl bg-panel px-5 py-6 text-panel-ink">
-          <h2 className="font-display text-2xl font-extrabold uppercase leading-none">Your journal is ready.</h2>
+          <h2 className="font-display text-2xl font-extrabold uppercase leading-none">{journal.sessionsLoaded ? "Your journal is ready." : "Your journal is unavailable."}</h2>
           <p className="mt-3 max-w-[32ch] text-sm leading-6 text-panel-ink-muted">Your completed sessions, sends, and flashes will collect here after your first climb.</p>
           <Link href="/gyms" className="button-feedback mt-5 inline-flex min-h-11 items-center rounded-full bg-accent px-4 text-sm font-bold text-accent-ink">Choose a gym</Link>
         </section>
@@ -123,14 +112,14 @@ export default async function SessionsPage() {
               </div>
               <div className="border-l border-panel-track pl-4 text-right">
                 <p className="font-display text-3xl font-extrabold uppercase leading-none">{live ? "Live" : `${featured.session.duration_minutes} min`}</p>
-                <p className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-panel-ink-muted">{featured.attempts.length} route{featured.attempts.length === 1 ? "" : "s"} · {sends + flashes} send{sends + flashes === 1 ? "" : "s"}</p>
+                <p className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-panel-ink-muted">{featuredReliable ? `${featured.attempts.length} routes · ${sends + flashes} sends` : "Summary unavailable"}</p>
               </div>
             </div>
             <div className="mt-5 grid grid-cols-4 gap-2 rounded-xl bg-[oklch(0.17_0.003_0)] px-3 py-3">
-              <OutcomeStat count={flashes} label="Flash" colour="bg-[oklch(0.58_0.17_145)]" />
-              <OutcomeStat count={sends} label="Send" colour="bg-[oklch(0.56_0.16_250)]" />
-              <OutcomeStat count={inProgress} label="In progress" colour="bg-accent" />
-              <OutcomeStat count={notLogged} label="Not logged" colour="bg-[oklch(0.6_0.003_0)]" />
+              <OutcomeStat count={featuredReliable ? flashes : null} label="Flash" colour="bg-[oklch(0.58_0.17_145)]" />
+              <OutcomeStat count={featuredReliable ? sends : null} label="Send" colour="bg-[oklch(0.56_0.16_250)]" />
+              <OutcomeStat count={featuredReliable ? inProgress : null} label="In progress" colour="bg-accent" />
+              <OutcomeStat count={featuredReliable ? notLogged : null} label="Not logged" colour="bg-[oklch(0.6_0.003_0)]" />
             </div>
           </section>
 
@@ -146,7 +135,7 @@ export default async function SessionsPage() {
                 {featuredRoutes.map((route) => {
                   const attempt = attemptsByRoute.get(route.id);
                   return (
-                    <Link key={route.id} href={`/sessions/${featured.session.id}`} className="button-feedback grid grid-cols-[62px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-hairline bg-bg px-3 py-3">
+                    <Link key={route.id} href={`/sessions/${featured.session.id}`} className="button-feedback grid grid-cols-[62px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-hairline bg-bg py-3 pl-3 pr-5">
                       <RouteHold colour={route.colour} routeName={route.route_name} className="h-[58px] w-[58px]" />
                       <div className="min-w-0">
                         <p className="font-display text-3xl font-extrabold leading-none text-ink">{route.grade}</p>
@@ -157,8 +146,8 @@ export default async function SessionsPage() {
                       </div>
                       <div className="min-w-[70px] text-right">
                         <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-muted">Attempts</p>
-                        <p className="mt-0.5 font-display text-2xl font-bold leading-none text-ink">{attempt?.num_attempts ?? "—"}</p>
-                        <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] ${attempt ? RESULT_META[attempt.result].className : "bg-[oklch(0.92_0.002_0)] text-ink-muted"}`}>{attempt ? RESULT_META[attempt.result].label : "Not logged"}</span>
+                        <p className="mt-0.5 font-display text-2xl font-bold leading-none text-ink">{featuredReliable ? attempt?.num_attempts ?? "—" : "—"}</p>
+                        <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] ${attempt ? RESULT_META[attempt.result].className : "bg-[oklch(0.92_0.002_0)] text-ink-muted"}`}>{!featuredReliable ? "Unavailable" : attempt ? RESULT_META[attempt.result].label : "Not logged"}</span>
                       </div>
                     </Link>
                   );
@@ -171,12 +160,12 @@ export default async function SessionsPage() {
           <section aria-labelledby="all-sessions" className="pt-2">
             <div className="flex items-baseline justify-between gap-3"><h2 id="all-sessions" className="font-display text-2xl font-extrabold uppercase leading-none tracking-[-0.02em] text-ink">All sessions</h2><p className="text-xs font-semibold text-ink-muted">{records.length} total</p></div>
             <div className="mt-4 divide-y divide-hairline border-y border-hairline">
-              {records.map(({ session, attempts }) => {
+              {records.map(({ session, attempts, loaded }) => {
                 const gym = gymById.get(session.gym_id);
                 const sessionSends = attempts.filter((attempt) => attempt.result === "send" || attempt.result === "flash").length;
                 const sessionFlashes = attempts.filter((attempt) => attempt.result === "flash").length;
                 const active = session.duration_minutes === 0;
-                return <Link key={session.id} href={`/sessions/${session.id}`} className="button-feedback group flex min-h-24 items-center gap-4 py-4"><time dateTime={session.session_date} className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-panel px-1 text-center font-display text-base font-bold uppercase leading-none text-panel-ink">{formatDate(session.session_date).replace(",", "")}</time><div className="min-w-0 flex-1"><p className="truncate font-display text-xl font-bold uppercase leading-none text-ink">{gym?.name ?? "Unknown gym"}</p><p className="mt-2 text-sm text-ink-muted">{active ? "In progress" : `${session.duration_minutes} min`}{attempts.length > 0 ? ` · ${attempts.length} routes` : ""}</p></div><div className="shrink-0 text-right"><p className="text-sm font-bold text-ink">{sessionSends} sends</p><p className="mt-1 text-xs font-semibold text-accent">{sessionFlashes > 0 ? `⚡ ${sessionFlashes} flash${sessionFlashes === 1 ? "" : "es"}` : ""}</p></div></Link>;
+                return <Link key={session.id} href={`/sessions/${session.id}`} className="button-feedback group flex min-h-24 items-center gap-4 py-4"><time dateTime={session.session_date} className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-panel px-1 text-center font-display text-base font-bold uppercase leading-none text-panel-ink">{formatDate(session.session_date).replace(",", "")}</time><div className="min-w-0 flex-1"><p className="truncate font-display text-xl font-bold uppercase leading-none text-ink">{gym?.name ?? "Unknown gym"}</p><p className="mt-2 text-sm text-ink-muted">{active ? "In progress" : `${session.duration_minutes} min`}{attempts.length > 0 ? ` · ${attempts.length} routes` : ""}</p></div><div className="shrink-0 text-right"><p className="text-sm font-bold text-ink">{loaded && !duplicateRouteIds(attempts).size ? `${sessionSends} sends` : "Unavailable"}</p><p className="mt-1 text-xs font-semibold text-accent">{loaded && !duplicateRouteIds(attempts).size && sessionFlashes > 0 ? `⚡ ${sessionFlashes} flash${sessionFlashes === 1 ? "" : "es"}` : ""}</p></div></Link>;
               })}
             </div>
           </section>

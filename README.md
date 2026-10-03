@@ -13,6 +13,13 @@ The frontend lives in this repository and is deployed at [bouldy.vercel.app](htt
 
 **Status labels matter:** `Live` means present in this frontend or in the current public OpenAPI schema, as specified; `Planned` is a product direction, not a shipped feature or agreed API. If code, API, and docs disagree, verify the code and live API, then update the specs in the same change. Do not invent persistence, social metrics, or data for a mock-up.
 
+## Product improvement work briefs
+
+- [Frontend product improvements](./docs/FRONTEND_PRODUCT_IMPROVEMENTS.md) — a separate backlog of five tasks FE can start without new BE changes, optional prototypes/input-dependent work, and later BE-dependent enhancements, with difficulty and acceptance criteria.
+- [Backend product improvements](./docs/BACKEND_PRODUCT_IMPROVEMENTS.md) — enabling work, BE difficulty, proposed contracts, product decisions and delivery order for the same proposals.
+
+These briefs split the 1 October 2026 feasibility report into team backlogs, checked against source/contracts on 3 October 2026. Proposed features and rules remain recommendations, not shipped functionality.
+
 ## Current user journey
 
 Sign up or log in → choose or add a gym → start a session → browse active routes → log attempts, a send, or a first-try flash → end the session → review the journal and Home summary. Routes should be **retired**, not deleted, when a gym resets its wall; historic attempts must remain readable.

@@ -3,7 +3,16 @@
 import { useEffect, useRef, type ReactNode, type TouchEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-const TABS = ["/", "/sessions", "/gyms"];
+const TABS = ["/", "/explore", "/sessions", "/gyms", "/profile"];
+
+function depth(path: string) {
+  return Math.max(1, path.split("/").filter(Boolean).length);
+}
+
+function tabIndex(path: string) {
+  const top = `/${path.split("/")[1] ?? ""}`;
+  return TABS.indexOf(top);
+}
 
 export function PageMotion({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -19,10 +28,13 @@ export function PageMotion({ children }: { children: ReactNode }) {
     if (from === pathname || !element.current) return;
     element.current.closest(".app-shell__scroll")?.scrollTo({ top: 0 });
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const direction = TABS.indexOf(pathname) < TABS.indexOf(from) ? -1 : 1;
+    // Going deeper pushes in from the right; coming back reverses. Same depth compares tab order.
+    const deeper = depth(pathname) - depth(from);
+    const direction = deeper !== 0 ? Math.sign(deeper) : tabIndex(pathname) < tabIndex(from) ? -1 : 1;
+    const distance = deeper !== 0 ? 28 : 18;
     const animation = element.current.animate(
-      [{ transform: `translateX(${direction * 18}px)`, opacity: 0.75 }, { transform: "translateX(0)", opacity: 1 }],
-      { duration: 220, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+      [{ transform: `translateX(${direction * distance}px)`, opacity: 0.7 }, { transform: "translateX(0)", opacity: 1 }],
+      { duration: deeper !== 0 ? 260 : 220, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
     );
     return () => animation.cancel();
   }, [pathname]);
@@ -30,7 +42,7 @@ export function PageMotion({ children }: { children: ReactNode }) {
   function start(event: TouchEvent) {
     touch.current = null;
     if (event.touches.length !== 1 || !TABS.includes(pathname)) return;
-    if (event.target instanceof Element && event.target.closest("a, button, input, textarea, select, summary, [data-no-swipe]")) return;
+    if (event.target instanceof Element && event.target.closest("a, button, input, textarea, select, summary, dialog, [data-no-swipe]")) return;
     const point = event.touches[0];
     // Leave screen edges to the browser's back/forward gestures.
     if (point.clientX < 28 || point.clientX > window.innerWidth - 28) return;

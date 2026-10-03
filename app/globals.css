@@ -87,7 +87,10 @@ a[href] {
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
@@ -383,6 +386,39 @@ body {
   }
 }
 
+/* Bottom sheet: native dialog pinned to the bottom of the 430px canvas. */
+.bottom-sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: var(--shell-max);
+  max-height: 88dvh;
+  padding: 0;
+  border: 0;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+.bottom-sheet[open] { animation: sheet-in 260ms cubic-bezier(0.22, 1, 0.36, 1); }
+.bottom-sheet[data-closing] { animation: sheet-out 200ms cubic-bezier(0.64, 0, 0.78, 0) forwards; }
+.bottom-sheet::backdrop { background: oklch(0.16 0 0 / 0.5); }
+.bottom-sheet[open]::backdrop { animation: sheet-fade 260ms ease-out; }
+.bottom-sheet[data-closing]::backdrop { animation: sheet-fade-out 200ms ease-in forwards; }
+.bottom-sheet__panel { display: flex; max-height: 88dvh; flex-direction: column; }
+.bottom-sheet__head { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 0 12px 0 20px; }
+.bottom-sheet__grab { flex: 1; min-width: 0; padding: 26px 0 12px; touch-action: none; cursor: grab; }
+/* Centered on the whole sheet, not the title column beside the close button. */
+.bottom-sheet__handle { position: absolute; top: 8px; left: 50%; width: 36px; height: 4px; transform: translateX(-50%); border-radius: 999px; background: var(--hairline); pointer-events: none; }
+.bottom-sheet__close { display: grid; width: 44px; height: 44px; margin-top: 16px; flex-shrink: 0; place-items: center; border-radius: 999px; color: var(--ink-muted); }
+.bottom-sheet__body { overflow-y: auto; padding: 4px 20px max(24px, env(safe-area-inset-bottom)); }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+@keyframes sheet-out { to { transform: translateY(100%); } }
+@keyframes sheet-fade { from { opacity: 0; } }
+@keyframes sheet-fade-out { to { opacity: 0; } }
+
 .route-loading-overlay {
   position: absolute;
   inset: 0;
@@ -390,3 +426,6 @@ body {
   background: var(--bg);
   overflow-y: auto;
 }
+
+::selection { background: var(--accent-tint); color: var(--accent-tint-ink); }
+input, textarea { caret-color: var(--accent-strong); }

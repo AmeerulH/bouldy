@@ -12,6 +12,16 @@ const TABS = [
     ),
   },
   {
+    href: "/explore",
+    label: "Explore",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m15.5 8.5-2 5-5 2 2-5z" />
+      </>
+    ),
+  },
+  {
     href: "/sessions",
     label: "Sessions",
     icon: (
@@ -31,10 +41,24 @@ const TABS = [
       </>
     ),
   },
+  {
+    href: "/profile",
+    label: "You",
+    icon: (
+      <>
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20c.8-3.6 3.8-5.5 7-5.5s6.2 1.9 7 5.5" />
+      </>
+    ),
+  },
 ];
+
+/** Full-screen form pages own the bottom edge with their sticky Save bar. */
+const FORM_PATH = /\/routes\/new$|\/routes\/[^/]+\/edit$/;
 
 export function BottomNav() {
   const pathname = usePathname();
+  if (FORM_PATH.test(pathname)) return null;
 
   return (
     <nav
@@ -48,7 +72,7 @@ export function BottomNav() {
             key={tab.href}
             href={tab.href}
             aria-current={isActive ? "page" : undefined}
-            className="bottom-tab flex flex-1 flex-col items-center gap-1 py-1.5"
+            className="bottom-tab flex min-w-0 flex-1 flex-col items-center gap-1 py-1.5"
           >
             <svg
               width="20"

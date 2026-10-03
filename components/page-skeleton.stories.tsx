@@ -5,7 +5,7 @@ const meta = {
   title: "Loading/Page Skeleton",
   component: PageSkeleton,
   args: { page: "sessions" },
-  argTypes: { page: { control: "select", options: ["home", "sessions", "session", "gyms", "login", "signup"] } },
+  argTypes: { page: { control: "select", options: ["home", "sessions", "session", "gyms", "form", "placeholder", "login", "signup"] } },
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof PageSkeleton>;
 
@@ -16,5 +16,7 @@ export const Sessions: Story = {};
 export const Home: Story = { args: { page: "home" } };
 export const SessionDetail: Story = { args: { page: "session" } };
 export const Gyms: Story = { args: { page: "gyms" } };
+export const RouteForm: Story = { args: { page: "form" } };
+export const Placeholder: Story = { args: { page: "placeholder" } };
 export const Login: Story = { args: { page: "login" } };
 export const Signup: Story = { args: { page: "signup" } };
